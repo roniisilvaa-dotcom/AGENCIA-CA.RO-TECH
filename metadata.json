@@ -1,0 +1,6 @@
+{
+  "name": "Portal CA.RO Tech & Mundi TKR",
+  "description": "Portal de Gestão Remota e Transparência Operacional para a Mundi TKR, seguindo a estética luxuosa e tecnológica da agência Caro.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
