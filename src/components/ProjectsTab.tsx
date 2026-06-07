@@ -8,13 +8,23 @@ import {
   MessageSquare, 
   TrendingUp, 
   ArrowRight, 
+  ArrowLeft,
   FolderLock,
   ChevronDown,
   ChevronsUpDown,
   Upload,
   Layers,
   Send,
-  X
+  X,
+  Sliders,
+  Sparkles,
+  RefreshCw,
+  LayoutGrid,
+  Kanban as KanbanIcon,
+  Activity,
+  Award,
+  Zap,
+  Globe
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -22,6 +32,11 @@ interface ProjectsTabProps {
   projects: Project[];
   onAddProject: (project: Project) => void;
   onUpdateProject: (project: Project) => void;
+  currentUser: {
+    role: "agency" | "client";
+    name: string;
+    email: string;
+  } | null;
 }
 
 const pipelineStages: Project["status"][] = [
@@ -35,9 +50,21 @@ const pipelineStages: Project["status"][] = [
   "Publicação"
 ];
 
-export default function ProjectsTab({ projects, onAddProject, onUpdateProject }: ProjectsTabProps) {
+const stageColors: Record<string, string> = {
+  "Briefing": "border-zinc-700/40 text-zinc-400 bg-zinc-950/20",
+  "Planejamento": "border-blue-500/20 text-blue-400 bg-blue-500/5",
+  "Criação": "border-amber-500/20 text-amber-400 bg-amber-500/5",
+  "Design": "border-purple-500/20 text-purple-400 bg-purple-500/5",
+  "Revisão": "border-orange-500/20 text-orange-400 bg-orange-500/5",
+  "Aprovação": "border-[#C5A059]/30 text-[#E5D1B0] bg-[#C5A059]/5",
+  "Programação": "border-teal-500/20 text-teal-400 bg-teal-500/5",
+  "Publicação": "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+};
+
+export default function ProjectsTab({ projects, onAddProject, onUpdateProject, currentUser }: ProjectsTabProps) {
   const [activeProjectFilter, setActiveProjectFilter] = useState<string>("all");
   const [showPlanForm, setShowPlanForm] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   
   // New project creation state
   const [newName, setNewName] = useState("");
@@ -49,7 +76,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
   const [newStatus, setNewStatus] = useState<Project["status"]>("Briefing");
 
   // Selected project drawer details
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projects[0]?.id || null);
 
   // Comment input
   const [commentText, setCommentText] = useState("");
@@ -58,7 +85,17 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
     e.preventDefault();
     if (!newName || !newGoal || !newStart || !newEnd) return;
 
-    const newProg = newStatus === "Briefing" ? 10 : newStatus === "Planejamento" ? 25 : newStatus === "Criação" ? 40 : newStatus === "Design" ? 60 : newStatus === "Revisão" ? 75 : newStatus === "Aprovação" ? 90 : 95;
+    // Calculate progress depending on initial phase choice
+    const progressMap: Record<Project["status"], number> = {
+      "Briefing": 10,
+      "Planejamento": 25,
+      "Criação": 40,
+      "Design": 60,
+      "Revisão": 75,
+      "Aprovação": 90,
+      "Programação": 95,
+      "Publicação": 100
+    };
 
     const nProj: Project = {
       id: "proj-" + Date.now(),
@@ -69,7 +106,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
       endDate: newEnd,
       priority: newPriority,
       status: newStatus,
-      progress: newProg,
+      progress: progressMap[newStatus] || 10,
       lastUpdate: "Fluxo de projeto criado estritamente via portal de transparência.",
       comments: [],
       assets: []
@@ -85,6 +122,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
     setNewPriority("Média");
     setNewStatus("Briefing");
     setShowPlanForm(false);
+    setSelectedProjectId(nProj.id);
   };
 
   const handleAddComment = (projectId: string) => {
@@ -95,8 +133,8 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
 
     const newComment: Comment = {
       id: "comm-" + Date.now(),
-      author: "Mundi TKR Diretoria",
-      role: "Cliente",
+      author: currentUser?.name || "Diretoria Mundi TKR",
+      role: currentUser?.role === "agency" ? "Diretor Técnico" : "Cliente",
       text: commentText,
       date: new Date().toISOString().split("T")[0]
     };
@@ -104,31 +142,62 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
     const updated: Project = {
       ...target,
       comments: [...target.comments, newComment],
-      lastUpdate: `Comentário novo registrado pelo cliente Mundi TKR: "${commentText.slice(0, 30)}..."`
+      lastUpdate: `Novo comentário registrado por ${currentUser?.name || "Mundi TKR"}: "${commentText.slice(0, 30)}..."`
     };
 
     onUpdateProject(updated);
     setCommentText("");
   };
 
-  const handleAdvanceStatus = (proj: Project) => {
-    const currentIndex = pipelineStages.indexOf(proj.status);
-    if (currentIndex === -1 || currentIndex === pipelineStages.length - 1) return;
+  // State handler to move statuses manually or via HTML5 Drag and Drop
+  const handleTransitionStatus = (projId: string, nextStatus: Project["status"]) => {
+    const target = projects.find(p => p.id === projId);
+    if (!target) return;
 
-    const nextStatus = pipelineStages[currentIndex + 1];
-    let nextProgress = Math.min(100, proj.progress + 12);
-    if (nextStatus === "Publicação") nextProgress = 100;
-    if (nextStatus === "Aprovação") nextProgress = 90;
-
-    const updated: Project = {
-      ...proj,
-      status: nextStatus,
-      progress: nextProgress,
-      lastUpdate: `Status avançado automaticamente de ${proj.status} para ${nextStatus}.`
+    const progressMap: Record<Project["status"], number> = {
+      "Briefing": 10,
+      "Planejamento": 25,
+      "Criação": 40,
+      "Design": 60,
+      "Revisão": 75,
+      "Aprovação": 90,
+      "Programação": 95,
+      "Publicação": 100
     };
 
+    const updated: Project = {
+      ...target,
+      status: nextStatus,
+      progress: progressMap[nextStatus],
+      lastUpdate: `Pipeline realinhado para: ${nextStatus} por ${currentUser?.name || "Operação"}.`
+    };
     onUpdateProject(updated);
   };
+
+  // Drag and Drop implementation
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData("projectId", id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetStatus: Project["status"]) => {
+    e.preventDefault();
+    const pid = e.dataTransfer.getData("projectId");
+    if (pid) {
+      handleTransitionStatus(pid, targetStatus);
+    }
+  };
+
+  // Metrics calculations for the dashboard widgets
+  const totalProjects = projects.length;
+  const avgProgress = totalProjects > 0 
+    ? Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / totalProjects) 
+    : 0;
+  const highPriorityCount = projects.filter(p => p.priority === "Alta").length;
+  const activeWorkingCount = projects.filter(p => ["Criação", "Design", "Revisão"].includes(p.status)).length;
 
   const filteredProjects = activeProjectFilter === "all" 
     ? projects 
@@ -142,52 +211,143 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
       {/* Upper Options */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="font-serif text-2xl text-white tracking-tight">Projetos & Execução</h2>
-          <p className="text-xs text-zinc-400">Acompanhamento completo de fluxos, prioridades e pipelines remotos.</p>
+          <h2 className="font-serif text-2xl text-white tracking-tight">Projetos & Módulos Kanban</h2>
+          <p className="text-xs text-zinc-400">Atividades organizadas e fluxos rastreáveis com dashboards operacionais.</p>
         </div>
 
-        <button
-          onClick={() => setShowPlanForm(!showPlanForm)}
-          className="px-4 py-2 bg-zinc-900 border border-[#C5A059]/30 hover:border-[#C5A059]/60 text-[#E5D1B0] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer self-stretch md:self-auto justify-center"
-        >
-          <Plus className="w-4 h-4" /> Planejar Novo Projeto
-        </button>
-      </div>
-
-      {/* Filter Tabs for Pipeline Stage */}
-      <div className="flex flex-wrap gap-1.5 border-b border-white/5 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveProjectFilter("all")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-medium font-tech tracking-wide transition-all cursor-pointer ${
-            activeProjectFilter === "all" ? "bg-[#C5A059]/15 border border-[#C5A059]/30 text-[#E5D1B0]" : "text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          Todos ({projects.length})
-        </button>
-        {pipelineStages.map(stage => {
-          const count = projects.filter(p => p.status === stage).length;
-          return (
+        <div className="flex items-center gap-2.5 self-stretch md:self-auto justify-end">
+          {/* View Mode selection */}
+          <div className="flex bg-zinc-950 p-1.5 rounded-xl border border-white/5 font-mono text-[10px]">
             <button
-              key={stage}
-              onClick={() => setActiveProjectFilter(stage)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium font-tech tracking-wide transition-all cursor-pointer ${
-                activeProjectFilter === stage ? "bg-[#C5A059]/20 border border-[#C5A059]/40 text-[#E5D1B0]" : "text-zinc-400 hover:text-zinc-200"
+              onClick={() => setViewMode("kanban")}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer uppercase font-semibold transition-all ${
+                viewMode === "kanban" ? "bg-[#C5A059]/10 text-[#E5D1B0] font-bold border border-[#C5A059]/20" : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              {stage} ({count})
+              <KanbanIcon className="w-3.5 h-3.5" /> Mesa Kanban
             </button>
-          );
-        })}
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer uppercase font-semibold transition-all ${
+                viewMode === "list" ? "bg-[#C5A059]/10 text-[#E5D1B0] font-bold border border-[#C5A059]/20" : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Lista Cartões
+            </button>
+          </div>
+
+          {currentUser?.role === "agency" ? (
+            <button
+              onClick={() => setShowPlanForm(!showPlanForm)}
+              className="px-4 py-2.5 bg-zinc-900 border border-[#C5A059]/30 hover:border-[#C5A059]/60 text-[#E5D1B0] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Novo Projeto
+            </button>
+          ) : (
+            <div className="px-4 py-2.5 bg-zinc-900/60 border border-white/5 text-zinc-400 rounded-xl text-xs font-medium tracking-wide font-tech flex items-center gap-2 select-none justify-center">
+              <span>🔒 Gestão Exclusiva Agência</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Project Form or Stream Layout */}
+      {/* Technological Dashboard Widgets Section */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Widget 1 */}
+        <div className="bg-zinc-950/80 border border-white/5 p-4 rounded-2xl flex items-center gap-3 relative overflow-hidden backdrop-blur-sm shadow-xl">
+          <div className="p-2.5 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-xl text-[#C5A059]">
+            <Activity className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Conclusão Média</div>
+            <div className="text-lg font-serif text-white tracking-tight">{avgProgress}%</div>
+          </div>
+          <div className="absolute right-0 bottom-0 p-1 opacity-10">
+            <Sliders className="w-16 h-16 text-[#C5A059]" />
+          </div>
+        </div>
+
+        {/* Widget 2 */}
+        <div className="bg-zinc-950/80 border border-white/5 p-4 rounded-2xl flex items-center gap-3 relative overflow-hidden backdrop-blur-sm shadow-xl">
+          <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
+            <Zap className="w-4 h-4 text-rose-500" />
+          </div>
+          <div>
+            <div className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Prazos Críticos</div>
+            <div className="text-lg font-serif text-white tracking-tight">{highPriorityCount} Alta Prioridade</div>
+          </div>
+          <div className="absolute right-0 bottom-0 p-1 opacity-10">
+            <Zap className="w-16 h-16 text-rose-500" />
+          </div>
+        </div>
+
+        {/* Widget 3 */}
+        <div className="bg-zinc-950/80 border border-white/5 p-4 rounded-2xl flex items-center gap-3 relative overflow-hidden backdrop-blur-sm shadow-xl">
+          <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Célula Criação</div>
+            <div className="text-lg font-serif text-white tracking-tight">{activeWorkingCount} Projetos Ativos</div>
+          </div>
+          <div className="absolute right-0 bottom-0 p-1 opacity-10">
+            <Layers className="w-16 h-16 text-blue-400" />
+          </div>
+        </div>
+
+        {/* Widget 4 */}
+        <div className="bg-zinc-950/80 border border-white/5 p-4 rounded-2xl flex items-center gap-3 relative overflow-hidden backdrop-blur-sm shadow-xl">
+          <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+            <Globe className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Pipeline Sincronizado</div>
+            <div className="text-lg font-serif text-white tracking-tight">{totalProjects} frentes</div>
+          </div>
+          <div className="absolute right-0 bottom-0 p-1 opacity-10">
+            <Globe className="w-16 h-16 text-emerald-400" />
+          </div>
+        </div>
+
+      </div>
+
+      {/* Filter Tabs / Stage summary indicators only in list view */}
+      {viewMode === "list" && (
+        <div className="flex flex-wrap gap-1.5 border-b border-white/5 pb-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveProjectFilter("all")}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium font-tech tracking-wide transition-all cursor-pointer ${
+              activeProjectFilter === "all" ? "bg-[#C5A059]/15 border border-[#C5A059]/30 text-[#E5D1B0]" : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            Todos ({projects.length})
+          </button>
+          {pipelineStages.map(stage => {
+            const count = projects.filter(p => p.status === stage).length;
+            return (
+              <button
+                key={stage}
+                onClick={() => setActiveProjectFilter(stage)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium font-tech tracking-wide transition-all cursor-pointer ${
+                  activeProjectFilter === stage ? "bg-[#C5A059]/20 border border-[#C5A059]/40 text-[#E5D1B0]" : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {stage} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Project Plan creation module */}
       <AnimatePresence mode="wait">
-        {showPlanForm ? (
+        {showPlanForm && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="luxury-card p-6 rounded-2xl relative"
+            className="luxury-card p-6 rounded-2xl relative border border-white/5 bg-zinc-950"
           >
             <button 
               onClick={() => setShowPlanForm(false)} 
@@ -207,7 +367,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                   <input
                     type="text"
                     required
-                    className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                     placeholder="Ex: Editorial Inovação Chão de Fábrica"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
@@ -218,7 +378,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                   <textarea
                     required
                     rows={4}
-                    className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] resize-none"
+                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] resize-none outline-none"
                     placeholder="Ex: Registrar os avanços de manufatura da Mundi TKR em São Paulo com fotografia de altíssimo padrão..."
                     value={newGoal}
                     onChange={(e) => setNewGoal(e.target.value)}
@@ -233,7 +393,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                     <input
                       type="date"
                       required
-                      className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                       value={newStart}
                       onChange={(e) => setNewStart(e.target.value)}
                     />
@@ -243,7 +403,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                     <input
                       type="date"
                       required
-                      className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                       value={newEnd}
                       onChange={(e) => setNewEnd(e.target.value)}
                     />
@@ -254,7 +414,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                   <div className="col-span-1">
                     <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1">Prioridade</label>
                     <select
-                      className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                       value={newPriority}
                       onChange={(e) => setNewPriority(e.target.value as Project["priority"])}
                     >
@@ -266,7 +426,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                   <div className="col-span-1">
                     <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1">Fase Inicial</label>
                     <select
-                      className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                       value={newStatus}
                       onChange={(e) => setNewStatus(e.target.value as Project["status"])}
                     >
@@ -279,7 +439,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
                     <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1">Líder Técnico</label>
                     <input
                       type="text"
-                      className="w-full text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
                       value={newOwner}
                       onChange={(e) => setNewOwner(e.target.value)}
                     />
@@ -304,190 +464,354 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject }:
               </div>
             </form>
           </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-          >
-            {/* Project List Column - lg:col-span-2 */}
-            <div className="lg:col-span-2 space-y-4">
-              {filteredProjects.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-zinc-500 py-16 text-center border border-dashed border-white/5 rounded-2xl bg-zinc-900/10">
-                  <FolderLock className="w-10 h-10 text-[#C5A059] opacity-40 mb-2" />
-                  <p className="text-sm">Nenhum projeto ativo nesta fase da esteira.</p>
-                </div>
-              ) : (
-                filteredProjects.map(project => {
-                  const isSelected = selectedProjectId === project.id;
+        )}
+      </AnimatePresence>
+
+      {/* Main projects container based on selected view mode */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        
+        {/* Main Content Area */}
+        <div className="xl:col-span-3">
+          
+          <AnimatePresence mode="wait">
+            {viewMode === "kanban" ? (
+              
+              // STUNNING TRELLO-STYLE INTERACTIVE KANBAN BOARD
+              <motion.div
+                key="kanban-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x custom-scrollbar text-left h-[500px]"
+              >
+                {pipelineStages.map(stage => {
+                  const stageProjects = projects.filter(p => p.status === stage);
                   
                   return (
                     <div
-                      key={project.id}
-                      onClick={() => setSelectedProjectId(project.id)}
-                      className={`luxury-card p-5 rounded-xl cursor-pointer transition-all border ${
-                        isSelected ? "border-[#C5A059] bg-zinc-900/50" : "border-white/5 hover:border-white/15"
-                      }`}
+                      key={stage}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, stage)}
+                      className="w-72 shrink-0 bg-zinc-950/40 border border-white/5 p-3.5 rounded-2xl flex flex-col snap-start hover:border-[#C5A059]/20 transition-all"
                     >
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-tech font-bold uppercase px-2 py-0.5 rounded tracking-wider ${
-                              project.priority === "Alta" ? "bg-rose-500/10 text-rose-400 border border-rose-500/10" : 
-                              project.priority === "Média" ? "bg-amber-500/10 text-amber-400 border border-amber-500/10" : 
-                              "bg-[#C5A059]/10 text-[#E5D1B0] border border-[#C5A059]/10"
-                            }`}>
-                              Prioridade: {project.priority}
-                            </span>
-                            <span className="text-xs text-zinc-400 font-tech">• Lead: {project.owner}</span>
+                      {/* Column Header */}
+                      <div className="flex justify-between items-center mb-3 mb-4 select-none pb-2 border-b border-white/5">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${
+                            stage === "Briefing" ? "bg-zinc-500" :
+                            stage === "Planejamento" ? "bg-blue-500" :
+                            stage === "Criação" ? "bg-amber-500" :
+                            stage === "Design" ? "bg-purple-500" :
+                            stage === "Revisão" ? "bg-orange-500" :
+                            stage === "Aprovação" ? "bg-[#C5A059]" :
+                            stage === "Programação" ? "bg-teal-500" :
+                            "bg-emerald-500"
+                          }`} />
+                          <span className="text-xs font-bold tracking-wide uppercase font-tech text-white">{stage}</span>
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-white/5 text-zinc-400 font-mono">
+                          {stageProjects.length}
+                        </span>
+                      </div>
+
+                      {/* Column cards pool */}
+                      <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar min-h-[300px]">
+                        {stageProjects.length === 0 ? (
+                          <div className="h-full border border-dashed border-white/5 rounded-xl flex items-center justify-center p-6 text-center select-none">
+                            <p className="text-[10px] text-zinc-600 font-light">Arraste um cartão ou mude o status para esta fase.</p>
                           </div>
-                          <h3 className="font-serif text-lg text-white group-hover:text-[#E5D1B0] tracking-tight">{project.name}</h3>
-                          <p className="text-xs text-zinc-400 font-light leading-relaxed line-clamp-2">{project.goal}</p>
-                        </div>
-                      </div>
+                        ) : (
+                          stageProjects.map(project => {
+                            const isSelected = selectedProjectId === project.id;
+                            
+                            return (
+                              <div
+                                key={project.id}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, project.id)}
+                                onClick={() => setSelectedProjectId(project.id)}
+                                className={`p-4 bg-[#111111]/90 rounded-xl border cursor-grab active:cursor-grabbing transition-all ${
+                                  isSelected 
+                                    ? "border-[#C5A059] bg-zinc-900 shadow-[#C5A059]/5 shadow-md scale-[1.01]" 
+                                    : "border-white/5 hover:border-[#C5A059]/30 hover:bg-zinc-900/60"
+                                }`}
+                              >
+                                {/* Drag signal lines layout */}
+                                <div className="flex justify-between items-start gap-2 mb-1.5">
+                                  <span className={`text-[8px] font-tech font-bold uppercase px-1.5 py-0.5 rounded ${
+                                    project.priority === "Alta" ? "bg-rose-500/10 text-rose-400 border border-rose-500/10" : 
+                                    project.priority === "Média" ? "bg-amber-500/10 text-amber-500/70 border border-amber-500/10" : 
+                                    "bg-[#C5A059]/10 text-[#E5D1B0] border border-[#C5A059]/10"
+                                  }`}>
+                                    {project.priority}
+                                  </span>
+                                  
+                                  {/* Quick manual transition helper for mobile/accessible clicks */}
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      disabled={pipelineStages.indexOf(stage) === 0}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const prevStage = pipelineStages[pipelineStages.indexOf(stage) - 1];
+                                        handleTransitionStatus(project.id, prevStage);
+                                      }}
+                                      className="p-1 text-zinc-600 hover:text-[#C5A059] hover:bg-zinc-900 rounded cursor-pointer disabled:opacity-20"
+                                      title="Fase anterior"
+                                    >
+                                      <ArrowLeft className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      disabled={pipelineStages.indexOf(stage) === pipelineStages.length - 1}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const nextStage = pipelineStages[pipelineStages.indexOf(stage) + 1];
+                                        handleTransitionStatus(project.id, nextStage);
+                                      }}
+                                      className="p-1 text-zinc-600 hover:text-[#C5A059] hover:bg-zinc-900 rounded cursor-pointer disabled:opacity-20"
+                                      title="Próxima fase"
+                                    >
+                                      <ArrowRight className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
 
-                      {/* Micro pipeline visualization */}
-                      <div className="mt-5 space-y-2">
-                        <div className="flex justify-between text-[11px] font-tech text-zinc-400">
-                          <span className="flex items-center gap-1">Estágio: <strong className="text-white">{project.status}</strong></span>
-                          <span>Progresso: <strong>{project.progress}%</strong></span>
-                        </div>
-                        <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-white/5">
-                          <motion.div 
-                            className="bg-gradient-to-r from-[#C5A059] to-[#E5D1B0] h-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${project.progress}%` }}
-                            transition={{ duration: 0.6 }}
-                          />
-                        </div>
-                      </div>
+                                <h4 className="font-serif text-sm font-semibold text-zinc-100 group-hover:text-white leading-snug line-clamp-2">
+                                  {project.name}
+                                </h4>
 
-                      {/* Footer Actions */}
-                      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500 font-tech">
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> {project.comments.length}</span>
-                          <span>Início: {project.startDate}</span>
-                        </div>
-                        
-                        {project.status !== "Publicação" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAdvanceStatus(project);
-                            }}
-                            className="text-[#C5A059] hover:text-[#E5D1B0] uppercase font-semibold flex items-center gap-1 hover:underline cursor-pointer"
-                          >
-                            Avançar Fase <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
+                                <div className="mt-3 flex justify-between items-center text-[9px] font-mono text-zinc-500">
+                                  <span className="truncate max-w-[120px]">Lead: {project.owner}</span>
+                                  <span>{project.progress}%</span>
+                                </div>
+
+                                <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden mt-1.5 border border-white/5">
+                                  <div 
+                                    className="bg-gradient-to-r from-[#C5A059] to-[#E5D1B0] h-full"
+                                    style={{ width: `${project.progress}%` }}
+                                  />
+                                </div>
+                                
+                                {/* Micro tags summary */}
+                                <div className="mt-2.5 flex items-center justify-between text-[8px] text-zinc-600 uppercase font-tech">
+                                  <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {project.comments.length} obs</span>
+                                  <span>Fim: {project.endDate}</span>
+                                </div>
+                              </div>
+                            );
+                          })
                         )}
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
+                })}
+              </motion.div>
 
-            {/* Project Details Panel - lg:col-span-1 */}
-            <div className="lg:col-span-1">
-              {activeProjectDetails ? (
-                <div className="luxury-card p-5 rounded-2xl space-y-5 lg:sticky lg:top-4 border border-[#C5A059]/15">
-                  <div className="border-b border-white/5 pb-3">
-                    <h4 className="font-serif text-lg text-white tracking-tight">{activeProjectDetails.name}</h4>
-                    <span className="text-[10px] text-zinc-400 font-tech uppercase tracking-widest mt-1 block">Lead Técnico: {activeProjectDetails.owner}</span>
+            ) : (
+              
+              // TRADITIONAL STANDARD LIST VIEW
+              <motion.div
+                key="list-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4 text-left"
+              >
+                {filteredProjects.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-zinc-500 py-16 text-center border border-dashed border-white/5 rounded-2xl bg-zinc-900/10">
+                    <FolderLock className="w-10 h-10 text-[#C5A059] opacity-40 mb-2" />
+                    <p className="text-sm">Nenhum projeto ativo nesta fase da esteira.</p>
                   </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-tech block mb-1">Última Atualização Operacional</span>
-                      <p className="text-xs text-zinc-300 font-light leading-relaxed bg-[#C5A059]/5 p-3.5 rounded-xl border border-white/5 italic">
-                        "{activeProjectDetails.lastUpdate}"
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-950 p-3 rounded-xl border border-white/5">
-                      <div>
-                        <span className="text-[10px] text-zinc-500 block uppercase font-tech">Início</span>
-                        <strong className="text-zinc-200 mt-0.5 block">{activeProjectDetails.startDate}</strong>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-zinc-500 block uppercase font-tech">Previsão</span>
-                        <strong className="text-zinc-200 mt-0.5 block">{activeProjectDetails.endDate}</strong>
-                      </div>
-                    </div>
-
-                    {/* Comments log */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-tech block">Histórico de Comentários ({activeProjectDetails.comments.length})</span>
-                      
-                      <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                        {activeProjectDetails.comments.length === 0 ? (
-                          <div className="text-[11px] text-zinc-500 italic py-2">Nenhum comentário registrado para este projeto.</div>
-                        ) : (
-                          activeProjectDetails.comments.map(comm => (
-                            <div key={comm.id} className="p-2.5 rounded bg-zinc-900 border border-white/5 space-y-1">
-                              <div className="flex justify-between items-center text-[10px] text-zinc-400">
-                                <strong>{comm.author} ({comm.role})</strong>
-                                <span>{comm.date}</span>
-                              </div>
-                              <p className="text-xs text-zinc-300 font-light leading-relaxed">{comm.text}</p>
+                ) : (
+                  filteredProjects.map(project => {
+                    const isSelected = selectedProjectId === project.id;
+                    
+                    return (
+                      <div
+                        key={project.id}
+                        onClick={() => setSelectedProjectId(project.id)}
+                        className={`luxury-card p-5 rounded-xl cursor-pointer transition-all border ${
+                          isSelected ? "border-[#C5A059] bg-zinc-900/50" : "border-white/5 hover:border-white/15"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-tech font-bold uppercase px-2 py-0.5 rounded tracking-wider ${
+                                project.priority === "Alta" ? "bg-rose-500/10 text-rose-400 border border-rose-500/10" : 
+                                project.priority === "Média" ? "bg-amber-500/10 text-amber-400 border border-amber-500/10" : 
+                                "bg-[#C5A059]/10 text-[#E5D1B0] border border-[#C5A059]/10"
+                              }`}>
+                                Prioridade: {project.priority}
+                              </span>
+                              <span className="text-xs text-zinc-400 font-tech">• Lead: {project.owner}</span>
                             </div>
-                          ))
-                        )}
-                      </div>
+                            <h3 className="font-serif text-lg text-white group-hover:text-[#E5D1B0] tracking-tight">{project.name}</h3>
+                            <p className="text-xs text-zinc-400 font-light leading-relaxed line-clamp-2">{project.goal}</p>
+                          </div>
+                        </div>
 
-                      {/* Comment Form */}
-                      <div className="flex gap-2 pt-2">
-                        <input
-                          type="text"
-                          className="flex-1 text-xs bg-zinc-950 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059]"
-                          placeholder="Adicione observações ou ajustes..."
-                          value={commentText}
-                          onChange={(e) => setCommentText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleAddComment(activeProjectDetails.id);
-                          }}
-                        />
-                        <button
-                          onClick={() => handleAddComment(activeProjectDetails.id)}
-                          className="p-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-900 rounded-lg transition-all cursor-pointer flex items-center justify-center shrink-0"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Assets Render if any */}
-                    {activeProjectDetails.assets && activeProjectDetails.assets.length > 0 && (
-                      <div className="space-y-2">
-                        <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-tech block">Materiais e Fotos de Apoio</span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {activeProjectDetails.assets.map((ast, i) => (
-                            <img
-                              key={i}
-                              src={ast}
-                              alt="Asset"
-                              className="w-full h-16 object-cover rounded-lg border border-white/5 hover:scale-105 transition-all"
-                              referrerPolicy="no-referrer"
+                        {/* Micro pipeline progress bar indicator */}
+                        <div className="mt-5 space-y-2">
+                          <div className="flex justify-between text-[11px] font-tech text-zinc-400">
+                            <span className="flex items-center gap-1">Estágio: <strong className="text-white">{project.status}</strong></span>
+                            <span>Progresso: <strong>{project.progress}%</strong></span>
+                          </div>
+                          <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-white/5">
+                            <motion.div 
+                              className="bg-gradient-to-r from-[#C5A059] to-[#E5D1B0] h-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${project.progress}%` }}
+                              transition={{ duration: 0.6 }}
                             />
-                          ))}
+                          </div>
+                        </div>
+
+                        {/* Card footer metrics */}
+                        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500 font-tech">
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5" /> {project.comments.length} Comentários</span>
+                            <span>Início Oficial: {project.startDate}</span>
+                          </div>
+                          
+                          {project.status !== "Publicação" && currentUser?.role === "agency" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentIndex = pipelineStages.indexOf(project.status);
+                                if (currentIndex !== -1 && currentIndex < pipelineStages.length - 1) {
+                                  handleTransitionStatus(project.id, pipelineStages[currentIndex + 1]);
+                                }
+                              }}
+                              className="text-[#C5A059] hover:text-[#E5D1B0] uppercase font-semibold flex items-center gap-1 hover:underline cursor-pointer font-tech text-[9px] tracking-widest"
+                            >
+                              Próxima Fase <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
-                    )}
+                    );
+                  })
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
+        {/* Selected Project Drawer Detail Panel (xl:col-span-1) */}
+        <div className="xl:col-span-1">
+          {activeProjectDetails ? (
+            <div className="bg-zinc-950 border border-[#C5A059]/15 p-5 rounded-2xl space-y-5 xl:sticky xl:top-4 text-left shadow-2xl relative">
+              
+              {/* Highlight background lines */}
+              <div className="absolute top-0 right-0 p-3 flex items-center gap-1 text-[#C5A059]/40 font-tech text-[8px] select-none uppercase tracking-widest font-black">
+                <Sliders className="w-3 h-3" /> Detalhes Módulo
+              </div>
+
+              <div className="border-b border-white/5 pb-3 pr-8">
+                <h4 className="font-serif text-lg text-white tracking-tight">{activeProjectDetails.name}</h4>
+                <div className="flex flex-col gap-1.5 mt-2">
+                  <span className="text-[9px] text-zinc-500 font-tech uppercase tracking-widest block">Líder: {activeProjectDetails.owner}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-900 border border-white/5 px-2 py-0.5 rounded">
+                      Fase: {activeProjectDetails.status}
+                    </span>
+                    <span className="text-[9px] font-mono text-zinc-400 bg-zinc-900 border border-white/5 px-2 py-0.5 rounded">
+                      Progresso: {activeProjectDetails.progress}%
+                    </span>
                   </div>
                 </div>
-              ) : (
-                <div className="hidden lg:flex flex-col items-center justify-center text-zinc-500 py-24 text-center border border-dashed border-white/5 rounded-2xl h-full">
-                  <Layers className="w-8 h-8 text-[#C5A059] opacity-40 mb-2 animate-pulse" />
-                  <p className="text-xs">Selecione um projeto para auditar comentários, arquivos e histórico.</p>
-                </div>
-              )}
-            </div>
+              </div>
 
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-tech block mb-1 font-semibold">Atualização Operacional</span>
+                  <p className="text-xs text-zinc-300 font-light leading-relaxed bg-[#C5A059]/5 p-3.5 rounded-xl border border-white/5 italic">
+                    "{activeProjectDetails.lastUpdate}"
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs bg-[#111] p-3 rounded-xl border border-white/5">
+                  <div>
+                    <span className="text-[9px] text-zinc-500 block uppercase font-tech font-semibold">Data Início</span>
+                    <strong className="text-zinc-200 mt-0.5 block font-mono">{activeProjectDetails.startDate}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-zinc-500 block uppercase font-tech font-semibold">Data Entrega</span>
+                    <strong className="text-zinc-200 mt-0.5 block font-mono">{activeProjectDetails.endDate}</strong>
+                  </div>
+                </div>
+
+                {/* Comments Workflow log */}
+                <div className="space-y-2">
+                  <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-tech block font-semibold">Histórico de Discussão ({activeProjectDetails.comments.length})</span>
+                  
+                  <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                    {activeProjectDetails.comments.length === 0 ? (
+                      <div className="text-[10px] text-zinc-600 italic py-2">Nenhum comentário adicionado ao dossiê.</div>
+                    ) : (
+                      activeProjectDetails.comments.map(comm => (
+                        <div key={comm.id} className="p-2.5 rounded bg-[#111] border border-white/5 space-y-1">
+                          <div className="flex justify-between items-center text-[9px] text-zinc-400">
+                            <strong>{comm.author} ({comm.role})</strong>
+                            <span className="font-mono">{comm.date}</span>
+                          </div>
+                          <p className="text-xs text-zinc-300 font-light leading-relaxed">{comm.text}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Comment input Form */}
+                  <div className="flex gap-2 pt-2">
+                    <input
+                      type="text"
+                      className="flex-1 text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#C5A059]"
+                      placeholder="Comentar ou solicitar ajuste..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddComment(activeProjectDetails.id);
+                      }}
+                    />
+                    <button
+                      onClick={() => handleAddComment(activeProjectDetails.id)}
+                      className="p-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 rounded-lg transition-all cursor-pointer flex items-center justify-center shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Static supporting assets display */}
+                {activeProjectDetails.assets && activeProjectDetails.assets.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-white/5">
+                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-tech block font-semibold">Peças Digitais Ilustrativas</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {activeProjectDetails.assets.map((ast, i) => (
+                        <img
+                          key={i}
+                          src={ast}
+                          alt="Supporting Artwork piece"
+                          className="w-full h-16 object-cover rounded-lg border border-white/10 hover:scale-105 transition-all cursor-zoom-in"
+                          referrerPolicy="no-referrer"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          ) : (
+            <div className="hidden xl:flex flex-col items-center justify-center text-zinc-600 py-24 text-center border border-dashed border-white/5 rounded-2xl h-full bg-zinc-950/20 select-none">
+              <Layers className="w-8 h-8 text-[#C5A059] opacity-40 mb-2 animate-pulse" />
+              <p className="text-xs font-light">Selecione um projeto na Mesa Kanban para auditar comentários, arquivos e histórico.</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+
     </div>
   );
 }

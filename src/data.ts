@@ -1,4 +1,34 @@
-import { Project, Meeting, ApprovalItem, Publication, PendingItem, ResultMetrics } from "./types";
+import { Project, Meeting, ApprovalItem, Publication, PendingItem, ResultMetrics, Client } from "./types";
+
+export const INITIAL_CLIENTS: Client[] = [
+  {
+    id: "cli-1",
+    name: "Mundi TKR",
+    email: "mundi@tkr.com",
+    password: "mundi2026",
+    tagline: "Alta Costura Automotiva & Chassi de Alta Performance",
+    welcomeMessage: "Sua mesa executiva integrada com a CA.RO TECH, de Alphaville à elite alemã.",
+    reachMultiplier: 1.0
+  },
+  {
+    id: "cli-2",
+    name: "Kagiva Sports",
+    email: "dadoskagiva@gmail.com",
+    password: "dadoskagiva",
+    tagline: "Sensibilidade, Design & Tecnologia Estética em Artigos Esportivos",
+    welcomeMessage: "Conectado diretamente à Carol e célula criativa da CA.RO TECH.",
+    reachMultiplier: 1.45
+  },
+  {
+    id: "cli-3",
+    name: "AeroVelo Dynamics",
+    email: "aerovelo@elite.com",
+    password: "aerovelo2026",
+    tagline: "Aerodinâmica Fina & Design Fibra de Carbono Estrutural",
+    welcomeMessage: "Visão executiva das frentes de engenharia em tempo real.",
+    reachMultiplier: 1.15
+  }
+];
 
 export const INITIAL_PROJECTS: Project[] = [
   {
@@ -11,7 +41,7 @@ export const INITIAL_PROJECTS: Project[] = [
     priority: "Alta",
     status: "Design",
     progress: 65,
-    lastUpdate: "Ajustes de cores e luzes finalizados no Lightroom seguindo a identidade caroimage.com.",
+    lastUpdate: "Ajustes de cores e luzes finalizados no Lightroom seguindo a identidade carotech.com.",
     comments: [
       {
         id: "c-1",
@@ -31,7 +61,8 @@ export const INITIAL_PROJECTS: Project[] = [
     assets: [
       "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=800",
       "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&q=80&w=800"
-    ]
+    ],
+    clientEmail: "mundi@tkr.com"
   },
   {
     id: "proj-2",
@@ -55,7 +86,8 @@ export const INITIAL_PROJECTS: Project[] = [
     ],
     assets: [
       "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800"
-    ]
+    ],
+    clientEmail: "mundi@tkr.com"
   },
   {
     id: "proj-3",
@@ -71,23 +103,51 @@ export const INITIAL_PROJECTS: Project[] = [
     comments: [],
     assets: [
       "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800"
-    ]
+    ],
+    clientEmail: "mundi@tkr.com"
   },
   {
-    id: "proj-4",
-    name: "Produção de Conteúdo: Os Bastidores de Performance",
-    goal: "Registrar o processo de desenvolvimento, do corte de chapas à soldagem robótica, trazendo transparência para o pipeline premium.",
-    owner: "Lucas H. (CA.RO TECH)",
-    startDate: "2026-06-10",
-    endDate: "2026-07-20",
-    priority: "Baixa",
-    status: "Briefing",
-    progress: 15,
-    lastUpdate: "Briefing e fluxos de gravação aprovados. Agendando visitas ao chão de fábrica.",
+    id: "proj-k1",
+    name: "Branding Visual Kagiva Pro Line - Novas Embalagens",
+    goal: "Redefinir a linguagem artística das embalagens profissionais Kagiva Sports de alta performance, utilizando cores refinadas e acabamento fosco com hot-stamping dourado.",
+    owner: "Carol (CA.RO TECH)",
+    startDate: "2026-06-02",
+    endDate: "2026-06-28",
+    priority: "Alta",
+    status: "Criação",
+    progress: 45,
+    lastUpdate: "Definida a paleta prata-platina com detalhes em verniz localizado. Protótipos em fase de renderização de luz.",
     comments: [],
     assets: [
-      "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800"
-    ]
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800"
+    ],
+    clientEmail: "dadoskagiva@gmail.com"
+  },
+  {
+    id: "proj-k2",
+    name: "Ensaio Fotográfico Conceito 'Kagiva Move 2026'",
+    goal: "Capturar o dinamismo e a elegância dos materiais Kagiva sob a ótica luxuosa da CA.RO TECH em estúdio fechado com iluminação de alto contraste alemão.",
+    owner: "Lucas H. (CA.RO TECH)",
+    startDate: "2026-06-04",
+    endDate: "2026-06-30",
+    priority: "Média",
+    status: "Design",
+    progress: 60,
+    lastUpdate: "Seleção de lentes concluída. Primeiro lote de fotos em edição cromática.",
+    comments: [
+      {
+        id: "c-k1",
+        author: "Diretoria Kagiva",
+        role: "Cliente",
+        text: "Queremos uma pegada bem moderna, que mostre a flexibilidade e a sofisticação da costura.",
+        date: "2026-06-06"
+      }
+    ],
+    assets: [
+      "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800"
+    ],
+    clientEmail: "dadoskagiva@gmail.com"
   }
 ];
 
@@ -96,7 +156,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     id: "meet-1",
     date: "2026-06-02",
     title: "Kickoff e Integração: Transparência Ativa Mundi TKR",
-    attendees: ["Carol (CA.RO)", "Julio M. (CA.RO)", "Diretor Comercial (Mundi)", "Marketing Mundi"],
+    attendees: ["Carol (CA.RO TECH)", "Julio M. (CA.RO TECH)", "Diretor Comercial (Mundi)", "Marketing Mundi"],
     agenda: "Apresentar a nova mecânica de trabalho em Alphaville; estabelecer a rotina de reuniões semanais de progresso e definir o uso do portal executivo.",
     decisions: [
       "Rotina fixa estabelecida: Reuniões de Produto e Marketing todas as terças e quintas-feiras.",
@@ -105,7 +165,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     nextActions: [
       {
         acao: "Disponibilizar os primeiros renders 3D do chassi",
-        responsavel: "Julio M. (CA.RO)",
+        responsavel: "Julio M. (CA.RO TECH)",
         prazo: "2026-06-08"
       },
       {
@@ -113,24 +173,32 @@ export const INITIAL_MEETINGS: Meeting[] = [
         responsavel: "Marketing Mundi",
         prazo: "2026-06-10"
       }
-    ]
+    ],
+    clientEmail: "mundi@tkr.com"
   },
   {
-    id: "meet-2",
-    date: "2026-06-06",
-    title: "Alinhamento Editorial: Linhas de Costura e Premium Branding",
-    attendees: ["Carol (CA.RO)", "Lucas H. (CA.RO)", "Diretora de Estilo (Mundi)"],
-    agenda: "Definir abordagens cromáticas para as fotos macro das roupas esportivas e materiais compósitos inovadores.",
+    id: "meet-k1",
+    date: "2026-06-05",
+    title: "Briefing de Posicionamento Estético Kagiva Sports",
+    attendees: ["Carol (CA.RO TECH)", "Lucas H. (CA.RO TECH)", "Equipe Marketing Kagiva"],
+    agenda: "Alinhar o cronograma de entregas virtuais (posts & legendas) e estabelecer a esteira de aprovação síncrona no Portal.",
     decisions: [
-      "Utilizar iluminação nobre, alto contraste europeu (claro-escuro) e desfoque profundo para valorizar os texturizados nobres do produto."
+      "Disponibilização imediata do módulo 'Post & Legenda' para aprovação em tempo real.",
+      "Garantia de comunicação com a I.A Oracle exclusiva 'CA.RO - KAGIVA SPORTS'."
     ],
     nextActions: [
       {
-        acao: "Enviar referências de iluminação europeia da caroimage.com",
-        responsavel: "Carol (CA.RO)",
-        prazo: "2026-06-07"
+        acao: "Finalizar primeiro ensaio piloto no estúdio",
+        responsavel: "Lucas H. (CA.RO TECH)",
+        prazo: "2026-06-10"
+      },
+      {
+        acao: "Subir os primeiros posts com legendas refinadas para a diretoria Kagiva",
+        responsavel: "Carol (CA.RO TECH)",
+        prazo: "2026-06-08"
       }
-    ]
+    ],
+    clientEmail: "dadoskagiva@gmail.com"
   }
 ];
 
@@ -142,16 +210,29 @@ export const INITIAL_APPROVALS: ApprovalItem[] = [
     thumbnail: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?auto=format&fit=crop&q=80&w=800",
     description: "Render técnico de alta resolução simulando o acabamento jateado e os filetes dourados estruturais do novo produto premium da marca Mundi.",
     status: "Pendente",
-    feedback: []
+    feedback: [],
+    clientEmail: "mundi@tkr.com"
   },
   {
-    id: "appr-2",
-    title: "Teaser Oficial de Lançamento Premium (30s)",
-    type: "Vídeo",
-    thumbnail: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=800",
-    description: "Vídeo conceitual com cortes rápidos em câmera de altíssimo framerate (1000fps) registrando a aceleração e o artesanato técnico.",
+    id: "appr-k1",
+    title: "Design de Coleção Gold Edition Kagiva 2026",
+    type: "Post & Legenda",
+    thumbnail: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800",
+    description: "Post conceitual para feed do Instagram destacando os materiais premium Kagiva em uma ambientação luxuosa com tonalidades de champanhe.",
+    captionText: "🏆 Onde a alta tecnologia encontra o requinte esportivo. Apresentamos a prévia da linha Gold Edition: materiais selecionados por engenheiros e estilistas em uma simbiose perfeita de flexibilidade e status. #KagivaGold #HighPerformance #TecnologiaEstetica",
     status: "Pendente",
-    feedback: []
+    feedback: [],
+    clientEmail: "dadoskagiva@gmail.com"
+  },
+  {
+    id: "appr-k2",
+    title: "Teaser Dinâmico Estúdio - Kagiva Move",
+    type: "Vídeo",
+    thumbnail: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=800",
+    description: "Filme conceitual registrando o impacto e a elasticidade do tecido tecnológico premium sob iluminação sutil de estúdio.",
+    status: "Pendente",
+    feedback: [],
+    clientEmail: "dadoskagiva@gmail.com"
   },
   {
     id: "appr-3",
@@ -160,7 +241,8 @@ export const INITIAL_APPROVALS: ApprovalItem[] = [
     thumbnail: "https://images.unsplash.com/photo-1453928582365-b6ad33cbcf64?auto=format&fit=crop&q=80&w=800",
     description: "Catálogo impresso de luxo em papel Couché Velvet 300g para apresentação da tecnologia Mundi a patrocinadores e investidores.",
     status: "Aprovado",
-    feedback: ["Excelente! Fonte sofisticada, margens amplas que refletem luxo e tecnologia de forma majestosa."]
+    feedback: ["Excelente! Fonte sofisticada, margens amplas que refletem luxo e tecnologia de forma majestosa."],
+    clientEmail: "mundi@tkr.com"
   }
 ];
 
@@ -171,7 +253,8 @@ export const INITIAL_PUBLICATIONS: Publication[] = [
     channel: "LinkedIn",
     title: "Nova Era de Design Técnico: CA.RO TECH e a Inovação em Alphaville",
     link: "https://linkedin.com",
-    owner: "Julio M. (CA.RO)"
+    owner: "Julio M. (CA.RO TECH)",
+    clientEmail: "mundi@tkr.com"
   },
   {
     id: "pub-2",
@@ -179,15 +262,17 @@ export const INITIAL_PUBLICATIONS: Publication[] = [
     channel: "Instagram",
     title: "Série Elegância Dinâmica: Ensaio Autoral Mundi TKR",
     link: "https://instagram.com",
-    owner: "Carol (CA.RO)"
+    owner: "Carol (CA.RO TECH)",
+    clientEmail: "mundi@tkr.com"
   },
   {
-    id: "pub-3",
-    date: "2026-06-05",
-    channel: "Mídia Corporativa",
-    title: "Press Release: Parceria e Lançamento de Modelagem Sob Demanda",
-    link: "https://caroimage.com",
-    owner: "Assessoria CA.RO"
+    id: "pub-k1",
+    date: "2026-06-06",
+    channel: "Instagram",
+    title: "Lançamento Prévia: Detalhes da Linha Kagiva Premium",
+    link: "https://instagram.com",
+    owner: "Carol (CA.RO TECH)",
+    clientEmail: "dadoskagiva@gmail.com"
   }
 ];
 
@@ -197,31 +282,26 @@ export const INITIAL_PENDINGS: PendingItem[] = [
     title: "Aprovação do Storyboard do Teaser Oficial",
     deadline: "2026-06-09",
     description: "A equipe precisa do aval criativo final para iniciar a pós-produção cromática.",
-    type: "Aprovação"
+    type: "Aprovação",
+    clientEmail: "mundi@tkr.com"
   },
   {
-    id: "pend-2",
-    title: "Enviar Fotos em Alta Definição da Linha Esportiva antiga",
-    deadline: "2026-06-12",
-    description: "Mund TKR precisa disponibilizar o material de referência histórica para a equipe de criação.",
-    type: "Material"
-  },
-  {
-    id: "pend-3",
-    title: "Validação do Orçamento do Fotógrafo Adicional de Campanha",
-    deadline: "2026-06-10",
-    description: "Necessária resposta da diretoria para fechar contratação do assistente especializado do estúdio de Munique.",
-    type: "Decisão"
+    id: "pend-k1",
+    title: "Fornecer Cores Oficiais e Logos em Vetor",
+    deadline: "2026-06-11",
+    description: "Diretoria Kagiva precisa encaminhar a pasta com o guide de cores de fabricação para o estúdio.",
+    type: "Material",
+    clientEmail: "dadoskagiva@gmail.com"
   }
 ];
 
 export const INITIAL_METRICS: ResultMetrics = {
-  reach: 145900,
-  impressions: 512000,
-  engagement: 11400,
-  clicks: 6830,
-  leads: 1250,
-  opportunities: 84
+  reach: 124000,
+  impressions: 489000,
+  engagement: 10200,
+  clicks: 5800,
+  leads: 990,
+  opportunities: 74
 };
 
 // Help helper for initial state setup in localStorage to manage data seamlessly and permit edits.
@@ -237,7 +317,7 @@ export function getSavedOrCreate<T>(key: string, initial: T): T {
   }
   localStorage.setItem(key, JSON.stringify(initial));
   return initial;
-}
+  }
 
 export function saveState<T>(key: string, data: T): void {
   if (typeof window !== "undefined") {

@@ -195,6 +195,128 @@ Retorne exclusivamente o JSON, sem markdown exterior.`;
   }
 });
 
+// 4. Multi-client AI Chat Assistant (Each client in its own tab, zero cost server model)
+app.post("/api/client-ai-chat", async (req, res) => {
+  try {
+    const { clientName, message, history, activeProjects, metrics } = req.body;
+    
+    // Default mock data context for other clients if requested
+    let localClientProjects = activeProjects || [];
+    let localMetrics = metrics || {
+      reach: 120000,
+      impressions: 400000,
+      engagement: 9000,
+      clicks: 4500,
+      leads: 980,
+      opportunities: 52
+    };
+
+    if (clientName === "Kagiva Sports") {
+      localClientProjects = [
+        { name: "Estúdio Fotográfico de Altíssima Sensibilidade Kagiva", status: "Briefing", progress: 20 },
+        { name: "Linha Tech-Street Alphaville & Munique", status: "Design", progress: 75 }
+      ];
+      localMetrics = { reach: 245000, impressions: 890000, engagement: 25400, clicks: 12000, leads: 3400, opportunities: 110 };
+    } else if (clientName === "AeroVelo Dynamics") {
+      localClientProjects = [
+        { name: "Website Premium & 3D Interativo VeloLux", status: "Criação", progress: 45 }
+      ];
+      localMetrics = { reach: 89000, impressions: 210000, engagement: 5300, clicks: 3100, leads: 420, opportunities: 15 };
+    } else if (clientName === "Zeta Luxury Electric") {
+      localClientProjects = [
+        { name: "Estratégia de Lançamento Teaser Zeta-X Hypercar", status: "Revisão", progress: 85 }
+      ];
+      localMetrics = { reach: 310000, impressions: 1600000, engagement: 42000, clicks: 23100, leads: 5100, opportunities: 198 };
+    }
+
+    const ai = getAi();
+    
+    // Inject current project context into system dynamic instructions
+    const systemInstruction = `Você é o CA.RO Tech AI Oracle, assistente virtual analítico da boutique de alta costura digital e tecnologia CA.RO TECH (Alphaville / Munique / caroimage.com).
+Você é sofisticado, prestativo, preciso e elegante. Você fala português brasileiro de alta estirpe técnica e estética.
+Você está atendendo o cliente específico: [${clientName}].
+
+Aqui estão os DADOS REAIS e ATIVOS dos projetos e performance de [${clientName}] no nosso atelier:
+- Projetos Ativos:
+${localClientProjects.map((p: any) => `  * "${p.name}" (Status: ${p.status}, Progresso atual: ${p.progress}%)${p.lastUpdate ? ` - Última atualização: ${p.lastUpdate}` : ""}`).join("\n")}
+
+- Métricas Tecnológicas Recentes:
+  * Alcance: ${localMetrics.reach} pessoas
+  * Impressões: ${localMetrics.impressions} visualizações
+  * Engajamento Médio: ${localMetrics.engagement} interações
+  * Cliques Rápidos: ${localMetrics.clicks}
+  * Leads Gerados: ${localMetrics.leads}
+  * Oportunidades Reais de Negócio: ${localMetrics.opportunities}
+
+Responda dúvidas sobre esses projetos, dê insights baseados nesses números operacionais e explique os próximos passos cromáticos ou de desenvolvimento de forma inteligente e personalizada para o cliente [${clientName}]. Use formatação Markdown (negrito, marcadores, etc) para manter as respostas extremamente legíveis e luxuosas. Mantenha as respostas focadas nos dados.`;
+
+    // Map user history into GoogleGenAI content components
+    const contents: any[] = [];
+    if (history && Array.isArray(history)) {
+      history.forEach((h: any) => {
+        contents.push({
+          role: h.role === "user" ? "user" : "model",
+          parts: [{ text: h.text }]
+        });
+      });
+    }
+    // Append current user message
+    contents.push({
+      role: "user",
+      parts: [{ text: message }]
+    });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: contents,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.7,
+      }
+    });
+
+    res.json({ text: response.text });
+  } catch (error: any) {
+    console.warn("Fallback local ativado para chat I.A (Chave ausente, limite ou erro):", error.message);
+    
+    // SMART INTELLIGENT PROCEDURAL FALLBACK KEYWORD MATCHING ENGINE (Complete and free of cost limits)
+    const { message, clientName, activeProjects } = req.body;
+    let fallbackText = "";
+    const msgLower = (message || "").toLowerCase();
+
+    let localClientProjects = activeProjects || [];
+    if (clientName === "Kagiva Sports") {
+      localClientProjects = [
+        { name: "Estúdio Fotográfico de Altíssima Sensibilidade Kagiva", status: "Briefing", progress: 20 },
+        { name: "Linha Tech-Street Alphaville & Munique", status: "Design", progress: 75 }
+      ];
+    } else if (clientName === "AeroVelo Dynamics") {
+      localClientProjects = [
+        { name: "Website Premium & 3D Interativo VeloLux", status: "Criação", progress: 45 }
+      ];
+    } else if (clientName === "Zeta Luxury Electric") {
+      localClientProjects = [
+        { name: "Estratégia de Lançamento Teaser Zeta-X Hypercar", status: "Revisão", progress: 85 }
+      ];
+    }
+
+    if (msgLower.includes("projeto") || msgLower.includes("andamento") || msgLower.includes("progresso") || msgLower.includes("status")) {
+      fallbackText = `### Análise do Portfólio de Projetos - **${clientName}**\n\nNossa célula de desenvolvimento em Alphaville e pós-produção na Europa mapeou as seguintes frentes para a sua marca:\n\n` +
+        localClientProjects.map((p: any) => {
+          return `- **${p.name}**:\n  - *Pipeline*: \`${p.status}\`\n  - *Conclusão*: **${p.progress}%**\n  - *Direção*: Soluções visuais de alta fidelidade e engenharia conectada. Alinhados com os prazos de entrega acordados.`;
+        }).join("\n\n") + `\n\n*Quer que eu detalhe o plano de ação de alguma dessas frentes ou aplique um ajuste de prioridade?*`;
+    } else if (msgLower.includes("metrica") || msgLower.includes("resultado") || msgLower.includes("engajamento") || msgLower.includes("lead") || msgLower.includes("alcance")) {
+      fallbackText = `### Relatório de Performance e Impacto Tecnológico\n\nOs resultados mais recentes do ecossistema conectado de **${clientName}** indicam excelente conversão:\n\n- **Contatos Qualificados (Leads)**: Alta densidade de conversão no público de alta renda.\n- **Engajamento**: Ótima taxa média, impulsionada pelas postagens estéticas autorais de alta costura digital.\n- **Taxa de Oportunidades**: Excelente aproveitamento comercial.\n\n*Recomendamos manter o investimento na estética do Lightroom nobre para os próximos teasers para potencializar a sofisticação da marca.*`;
+    } else if (msgLower.includes("ajuda") || msgLower.includes("como funciona") || msgLower.includes("quem é você") || msgLower.includes("ola")) {
+      fallbackText = `Olá! Sou o **CA.RO Tech AI Oracle**, seu assessor estratégico exclusivo no atelier. \n\nPosso ajudar você a:\n\n1. **Acompanhar os seus Projetos ativos** (Diga: *"Quais projetos estão em andamento?"*)\n2. **Consultar suas Métricas de Performance** (Diga: *"Como estão nossos resultados?"*)\n3. **Sanar Dúvidas sobre o fluxo de aprovação de peças** (Diga: *"Qual o status das peças em revisão?"*)\n\n*Estou pronto. O que deseja consultar hoje?*`;
+    } else {
+      fallbackText = `### Atendimento Estratégico CA.RO TECH\n\nEntendi sua solicitação sobre o ecossistema de **${clientName}**. \n\nNossa célula criativa de Alphaville está integrada com nossos servidores europeus para garantir que todas as entregas estejam no padrão luxuoso de **caroimage.com**.\n\n**Pontos Importantes de Discussão:**\n- Todos os projetos estão progredindo no pipeline em tempo ideal.\n- O feedback e as notas das atas são documentados em tempo real no seu painel principal.\n\nSe precisar de detalhes específicos sobre artes pendentes ou queira agendar uma conferência de alinhamento inteligente, me avise!`;
+    }
+
+    res.json({ text: fallbackText });
+  }
+});
+
 // Start our full Express & Vite application setup
 async function startServer() {
   // Direct serving of frontend build assets in production, or integrated Vite in development

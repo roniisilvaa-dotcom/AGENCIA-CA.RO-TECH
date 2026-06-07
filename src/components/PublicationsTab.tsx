@@ -16,9 +16,14 @@ import { motion } from "motion/react";
 interface PublicationsTabProps {
   publications: Publication[];
   onAddPublication: (pub: Publication) => void;
+  currentUser: {
+    role: "agency" | "client";
+    name: string;
+    email: string;
+  } | null;
 }
 
-export default function PublicationsTab({ publications, onAddPublication }: PublicationsTabProps) {
+export default function PublicationsTab({ publications, onAddPublication, currentUser }: PublicationsTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [channelFilter, setChannelFilter] = useState("all");
 
@@ -84,12 +89,18 @@ export default function PublicationsTab({ publications, onAddPublication }: Publ
           <p className="text-xs text-zinc-400">Histórico de materiais veiculados e arquivamento estratégico.</p>
         </div>
 
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 bg-[#0A0A0A] border border-[#C5A059]/35 hover:border-[#C5A059]/60 text-[#E5D1B0] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer self-stretch sm:self-auto justify-center"
-        >
-          <Plus className="w-4 h-4" /> Registrar Publicação
-        </button>
+        {currentUser?.role === "agency" ? (
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="px-4 py-2 bg-[#0A0A0A] border border-[#C5A059]/35 hover:border-[#C5A059]/60 text-[#E5D1B0] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer self-stretch sm:self-auto justify-center"
+          >
+            <Plus className="w-4 h-4" /> Registrar Publicação
+          </button>
+        ) : (
+          <div className="px-4 py-2 bg-zinc-900/60 border border-white/5 text-zinc-400 rounded-xl text-xs font-medium tracking-wide font-tech flex items-center gap-2 select-none self-stretch sm:self-auto justify-center">
+            <span>🔒 Gestão Exclusiva Agência</span>
+          </div>
+        )}
       </div>
 
       {/* Show Add Form conditional drawer */}

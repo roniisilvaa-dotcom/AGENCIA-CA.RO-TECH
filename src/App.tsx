@@ -5,7 +5,9 @@ import {
   ApprovalItem, 
   Publication, 
   PendingItem, 
-  ResultMetrics 
+  ResultMetrics,
+  Client,
+  ClientMessage
 } from "./types";
 import { 
   INITIAL_PROJECTS, 
@@ -14,6 +16,7 @@ import {
   INITIAL_PUBLICATIONS, 
   INITIAL_PENDINGS, 
   INITIAL_METRICS,
+  INITIAL_CLIENTS,
   getSavedOrCreate,
   saveState
 } from "./data";
@@ -22,10 +25,12 @@ import {
 import DashboardTab from "./components/DashboardTab";
 import MeetingsTab from "./components/MeetingsTab";
 import ProjectsTab from "./components/ProjectsTab";
+import PortalAiTab from "./components/PortalAiTab";
 import ApprovalsTab from "./components/ApprovalsTab";
 import PublicationsTab from "./components/PublicationsTab";
 import ResultsTab from "./components/ResultsTab";
 import PendingsTab from "./components/PendingsTab";
+import LoginGate from "./components/LoginGate";
 
 // Lucide icons
 import { 
@@ -47,12 +52,35 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
+  // User Profile Authenticated State
+  const [currentUser, setCurrentUser] = useState<{ role: "agency" | "client"; name: string; email: string } | null>(() => {
+    try {
+      const saved = localStorage.getItem("caro_login");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleLogin = (role: "agency" | "client", name: string, email: string) => {
+    const user = { role, name, email };
+    setCurrentUser(user);
+    localStorage.setItem("caro_login", JSON.stringify(user));
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("caro_login");
+  };
+
   // Core App states persisting seamlessly inside localStorage
   const [projects, setProjects] = useState<Project[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [publications, setPublications] = useState<Publication[]>([]);
   const [pendings, setPendings] = useState<PendingItem[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [clientMessages, setClientMessages] = useState<ClientMessage[]>([]);
   const [metrics, setMetrics] = useState<ResultMetrics>(INITIAL_METRICS);
 
   // Initialize data on component mount
@@ -62,6 +90,25 @@ export default function App() {
     setApprovals(getSavedOrCreate<ApprovalItem[]>("caro_approvals", INITIAL_APPROVALS));
     setPublications(getSavedOrCreate<Publication[]>("caro_publications", INITIAL_PUBLICATIONS));
     setPendings(getSavedOrCreate<PendingItem[]>("caro_pendings", INITIAL_PENDINGS));
+    setClients(getSavedOrCreate<Client[]>("caro_clients", INITIAL_CLIENTS));
+    setClientMessages(getSavedOrCreate<ClientMessage[]>("caro_client_messages", [
+      {
+        id: "msg-init-1",
+        clientEmail: "mundi@tkr.com",
+        senderName: "Carol (CA.RO TECH)",
+        senderRole: "agency",
+        text: "Bem-vindos ao nosso espaço unificado de Barueri. Deixem suas considerações ou avisos urgentes aqui para nossa equipe de criação síncrona.",
+        timestamp: "07/06/2026, 14:00"
+      },
+      {
+        id: "msg-init-2",
+        clientEmail: "dadoskagiva@gmail.com",
+        senderName: "Carol (CA.RO TECH)",
+        senderRole: "agency",
+        text: "Olá equipe Kagiva Sports! Fuso de São Paulo sintonizado com Alphaville. Aguardamos sua revisão dos novos posts de alto impacto esportivo.",
+        timestamp: "07/06/2026, 14:15"
+      }
+    ]));
   }, []);
 
   // Update localStorage when state alters
@@ -110,6 +157,30 @@ export default function App() {
     saveState("caro_pendings", updated);
   };
 
+  const handleAddClient = (newCli: Client) => {
+    const updated = [...clients, newCli];
+    setClients(updated);
+    saveState("caro_clients", updated);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    const updated = clients.filter(c => c.id !== clientId);
+    setClients(updated);
+    saveState("caro_clients", updated);
+  };
+
+  const handleAddClientMessage = (newMsg: ClientMessage) => {
+    const updated = [...clientMessages, newMsg];
+    setClientMessages(updated);
+    saveState("caro_client_messages", updated);
+  };
+
+  const handleAddApproval = (newAppr: ApprovalItem) => {
+    const updated = [newAppr, ...approvals];
+    setApprovals(updated);
+    saveState("caro_approvals", updated);
+  };
+
   const handleResolvePending = (id: string) => {
     const updated = pendings.filter(p => p.id !== id);
     setPendings(updated);
@@ -119,10 +190,11 @@ export default function App() {
   const sidebarTabs = [
     { id: "dashboard", label: "Painel Geral", icon: LayoutDashboard },
     { id: "reunioes", label: "Histórico de Reuniões", icon: Users },
-    { id: "projetos", label: "Projetos & Execução", icon: Layers },
+    { id: "projetos", label: "Mesa Kanban & Status", icon: Layers },
+    { id: "portal-ai", label: "Portal I.A Oracle", icon: Sparkles },
     { id: "aprovacoes", label: "Aprovações (Mundis)", icon: CheckSquare },
     { id: "publicacoes", label: "Publicações", icon: FileCheck2 },
-    { id: "resultados", label: "Métricas & IA", icon: TrendingUp },
+    { id: "resultados", label: "Métricas & Relatórios", icon: TrendingUp },
     { id: "pendencias", label: "Pendências Cliente", icon: AlertTriangle, badge: pendings.length },
   ];
 
@@ -134,23 +206,57 @@ export default function App() {
   const renderActiveTabContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <DashboardTab projects={projects} meetings={meetings} pendings={pendings} publicationsCount={publications.length} />;
+        return (
+          <DashboardTab 
+            projects={projects} 
+            meetings={meetings} 
+            pendings={pendings} 
+            publicationsCount={publications.length} 
+            currentUser={currentUser} 
+            clients={clients}
+            onAddClient={handleAddClient}
+            onDeleteClient={handleDeleteClient}
+            onAddApproval={handleAddApproval}
+            clientMessages={clientMessages}
+            onAddClientMessage={handleAddClientMessage}
+          />
+        );
       case "reunioes":
-        return <MeetingsTab meetings={meetings} onAddMeeting={handleAddMeeting} />;
+        return <MeetingsTab meetings={meetings} onAddMeeting={handleAddMeeting} currentUser={currentUser} />;
       case "projetos":
-        return <ProjectsTab projects={projects} onAddProject={handleAddProject} onUpdateProject={handleUpdateProject} />;
+        return <ProjectsTab projects={projects} onAddProject={handleAddProject} onUpdateProject={handleUpdateProject} currentUser={currentUser} />;
+      case "portal-ai":
+        return <PortalAiTab projects={projects} currentUser={currentUser} />;
       case "aprovacoes":
-        return <ApprovalsTab approvals={approvals} onUpdateApproval={handleUpdateApproval} />;
+        return <ApprovalsTab approvals={approvals} onUpdateApproval={handleUpdateApproval} currentUser={currentUser} />;
       case "publicacoes":
-        return <PublicationsTab publications={publications} onAddPublication={handleAddPublication} />;
+        return <PublicationsTab publications={publications} onAddPublication={handleAddPublication} currentUser={currentUser} />;
       case "resultados":
         return <ResultsTab metrics={metrics} projects={projects} />;
       case "pendencias":
-        return <PendingsTab pendings={pendings} onAddPending={handleAddPending} onResolvePending={handleResolvePending} />;
+        return <PendingsTab pendings={pendings} onAddPending={handleAddPending} onResolvePending={handleResolvePending} currentUser={currentUser} />;
       default:
-        return <DashboardTab projects={projects} meetings={meetings} pendings={pendings} publicationsCount={publications.length} />;
+        return (
+          <DashboardTab 
+            projects={projects} 
+            meetings={meetings} 
+            pendings={pendings} 
+            publicationsCount={publications.length} 
+            currentUser={currentUser} 
+            clients={clients}
+            onAddClient={handleAddClient}
+            onDeleteClient={handleDeleteClient}
+            onAddApproval={handleAddApproval}
+            clientMessages={clientMessages}
+            onAddClientMessage={handleAddClientMessage}
+          />
+        );
     }
   };
+
+  if (!currentUser) {
+    return <LoginGate onLogin={handleLogin} />;
+  }
 
   return (
     <div id="app-viewport-wrapper" className="min-h-screen bg-[#0A0A0A] text-[#E5E5E5] relative overflow-hidden flex flex-col">
@@ -168,28 +274,48 @@ export default function App() {
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-[#C5A059] rounded-full shrink-0"></div>
               <div className="flex flex-col">
-                <span className="font-serif text-lg tracking-[0.25em] text-white">CA.RO <span className="italic text-[#C5A059]">IMAGE</span></span>
+                <span className="font-serif text-lg tracking-[0.25em] text-white">CA.RO <span className="italic text-[#C5A059]">TECH</span></span>
                 <span className="text-[9px] text-[#C5A059] font-tech uppercase tracking-[0.3em] font-medium">Tecnologia & Transparência / Atelier</span>
               </div>
             </div>
             <div className="hidden sm:block h-6 w-[1px] bg-white/10" />
             <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-zinc-400 font-tech">
-              <span>Parceria Executiva:</span>
-              <strong className="text-zinc-200">Mundi TKR</strong>
+              <span>Parceria Executiva</span>
             </div>
           </div>
 
           {/* Desktop Right items */}
-          <div className="hidden md:flex items-center gap-6">
-            <span className="text-[10px] tracking-widest font-mono text-zinc-500 uppercase">LX.BER.SP.2026</span>
-            <a 
-              href="https://caroimage.com/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-xs text-[#C5A059] hover:text-[#E5D1B0] inline-flex items-center gap-1.5 font-tech uppercase tracking-[0.2em] transition-colors"
-            >
-              VISITAR ATELIER <ExternalLink className="w-3 h-3" />
-            </a>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-3 bg-[#111] px-3 py-1.5 border border-white/5 rounded-xl">
+              <div className="flex flex-col text-right">
+                <span className="text-[10px] text-zinc-300 font-medium font-tech">{currentUser.name}</span>
+                <span className="text-[8px] text-[#C5A059] font-tech uppercase tracking-wider font-semibold">
+                  {currentUser.role === "agency" ? "Acesso Agência" : "Acesso Cliente / Auditor"}
+                </span>
+              </div>
+              <div className="h-4 w-[1px] bg-white/10" />
+              <button
+                onClick={() => {
+                  if (currentUser.role === "agency") {
+                    handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
+                  } else {
+                    handleLogin("agency", "Carol (CA.RO TECH)", "agencia@carotech.com");
+                  }
+                }}
+                className="text-[9px] font-tech text-[#C5A059] hover:text-white bg-zinc-950 px-2 py-1 rounded border border-[#C5A059]/20 hover:border-[#C5A059]/50 transition-all uppercase cursor-pointer"
+                title="Troque de visão instantaneamente para testar o portal como agência ou cliente!"
+              >
+                Alternar Visão
+              </button>
+              <button
+                onClick={handleLogout}
+                className="text-[9px] font-tech text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-2 py-1 rounded transition-all uppercase cursor-pointer font-bold"
+              >
+                Sair
+              </button>
+            </div>
+            
+            <span className="text-[9px] tracking-widest font-mono text-zinc-500 uppercase">LX.2026</span>
           </div>
 
           {/* Mobile menu trigger */}
@@ -298,6 +424,38 @@ export default function App() {
                   );
                 })}
               </div>
+
+              {/* Mobile session info & toggle */}
+              <div className="border-t border-white/5 pt-3.5 mt-2.5 flex flex-col gap-2 bg-[#111]/40 p-3 rounded-xl">
+                <div className="flex items-center justify-between px-1 text-[10px] text-zinc-400 font-tech">
+                  <span>Conectado como: <strong className="text-white font-medium">{currentUser.name}</strong></span>
+                  <span className="text-[#C5A059] uppercase font-bold tracking-wider">{currentUser.role === "agency" ? "Agência" : "Cliente"}</span>
+                </div>
+                <div className="flex gap-2 text-[10px] font-tech uppercase tracking-wider">
+                  <button
+                    onClick={() => {
+                      if (currentUser.role === "agency") {
+                        handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
+                      } else {
+                        handleLogin("agency", "Carol (CA.RO)", "agencia@caroimage.com");
+                      }
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex-1 py-2 text-center bg-zinc-900 border border-white/10 rounded-lg text-zinc-300 font-semibold cursor-pointer active:scale-95 transition-all"
+                  >
+                    Alternar Papel
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex-1 py-2 text-center bg-rose-950/20 text-rose-400 border border-rose-900/30 rounded-lg font-bold cursor-pointer active:scale-95 transition-all"
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -338,7 +496,7 @@ export default function App() {
             </div>
           </div>
           <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-normal text-center md:text-right">
-            CARO IMAGE ATELIER • Todos os Direitos Reservados • 2026
+            CARO TECH ATELIER • Todos os Direitos Reservados • 2026
           </div>
         </div>
       </footer>

@@ -18,9 +18,14 @@ interface PendingsTabProps {
   pendings: PendingItem[];
   onAddPending: (newPend: PendingItem) => void;
   onResolvePending: (id: string) => void;
+  currentUser: {
+    role: "agency" | "client";
+    name: string;
+    email: string;
+  } | null;
 }
 
-export default function PendingsTab({ pendings, onAddPending, onResolvePending }: PendingsTabProps) {
+export default function PendingsTab({ pendings, onAddPending, onResolvePending, currentUser }: PendingsTabProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDeadline, setNewDeadline] = useState("");
@@ -79,12 +84,18 @@ export default function PendingsTab({ pendings, onAddPending, onResolvePending }
           <p className="text-xs text-zinc-400">Demandas ativas qualificadas aguardando a retaguarda do cliente.</p>
         </div>
 
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 bg-[#C5A059] text-zinc-900 border border-[#C5A059] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer self-stretch sm:self-auto justify-center"
-        >
-          <Plus className="w-4 h-4" /> Solicitar Esclarecimento / Pendência
-        </button>
+        {currentUser?.role === "agency" ? (
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="px-4 py-2 bg-[#C5A059] text-zinc-900 border border-[#C5A059] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all cursor-pointer self-stretch sm:self-auto justify-center"
+          >
+            <Plus className="w-4 h-4" /> Solicitar Esclarecimento / Pendência
+          </button>
+        ) : (
+          <div className="px-4 py-2 bg-zinc-900/60 border border-white/5 text-zinc-400 rounded-xl text-xs font-medium tracking-wide font-tech flex items-center gap-2 select-none self-stretch sm:self-auto justify-center">
+            <span>🔒 Gestão Exclusiva Agência</span>
+          </div>
+        )}
       </div>
 
       {/* Conditionally rendered new pending items */}

@@ -10,26 +10,33 @@ import {
   HelpCircle,
   CornerDownRight,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface ApprovalsTabProps {
   approvals: ApprovalItem[];
   onUpdateApproval: (item: ApprovalItem) => void;
+  currentUser: {
+    role: "agency" | "client";
+    name: string;
+    email: string;
+  } | null;
 }
 
-export default function ApprovalsTab({ approvals, onUpdateApproval }: ApprovalsTabProps) {
+export default function ApprovalsTab({ approvals, onUpdateApproval, currentUser }: ApprovalsTabProps) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>("appr-1");
   const [feedbackInput, setFeedbackInput] = useState("");
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [celebrationMessage, setCelebrationMessage] = useState("");
 
   const handleApprove = (item: ApprovalItem) => {
+    const actorName = currentUser ? `${currentUser.name} (${currentUser.role === "agency" ? "Agência" : "Cliente"})` : "Conselho Mundi TKR";
     const updated: ApprovalItem = {
       ...item,
       status: "Aprovado",
-      feedback: item.feedback ? [...item.feedback, "Material formalmente aprovado e liberado pelo conselho Mundi TKR."] : ["Material formalmente aprovado e liberado pelo conselho Mundi TKR."]
+      feedback: item.feedback ? [...item.feedback, `Material formalmente aprovado e liberado por ${actorName}.`] : [`Material formalmente aprovado e liberado por ${actorName}.`]
     };
 
     onUpdateApproval(updated);
@@ -45,10 +52,13 @@ export default function ApprovalsTab({ approvals, onUpdateApproval }: ApprovalsT
   const handleRequestAdjustments = (item: ApprovalItem) => {
     if (!feedbackInput.trim()) return;
 
+    const actorName = currentUser ? `${currentUser.name} (${currentUser.role === "agency" ? "Agência" : "Cliente"})` : "Conselho";
+    const commentWithAuthor = `[Ajuste por ${actorName}]: ${feedbackInput}`;
+
     const updated: ApprovalItem = {
       ...item,
       status: "Ajustes Solicitados",
-      feedback: item.feedback ? [...item.feedback, feedbackInput] : [feedbackInput]
+      feedback: item.feedback ? [...item.feedback, commentWithAuthor] : [commentWithAuthor]
     };
 
     onUpdateApproval(updated);
@@ -63,6 +73,7 @@ export default function ApprovalsTab({ approvals, onUpdateApproval }: ApprovalsT
       case "Vídeo": return Volume2;
       case "Campanha": return Compass;
       case "Material Comercial": return FileText;
+      case "Post & Legenda": return FileText;
       default: return HelpCircle;
     }
   };
@@ -168,7 +179,7 @@ export default function ApprovalsTab({ approvals, onUpdateApproval }: ApprovalsT
            {selectedItem ? (
              <div className="luxury-card p-6 rounded-2xl space-y-5 lg:sticky lg:top-4 border border-[#C5A059]/20">
                <div className="space-y-2">
-                 <span className="text-[10px] text-[#C5A059] uppercase tracking-widest font-tech font-medium bg-[#C5A059]/5 px-2 py-1 rounded inline-block">
+                 <span className="text-[10px] text-[#C5A059] uppercase tracking-widest font-tech font-medium bg-[#C5A059]/15 px-2 py-1 rounded inline-block">
                    Auditoria de Campanha • ID: {selectedItem.id}
                  </span>
                  <h3 className="font-serif text-xl text-white tracking-tight leading-tight">{selectedItem.title}</h3>
@@ -193,6 +204,33 @@ export default function ApprovalsTab({ approvals, onUpdateApproval }: ApprovalsT
                  <div className="space-y-1">
                    <span className="text-[10px] text-zinc-400 font-tech uppercase tracking-widest block">Metas estratégicas do Asset</span>
                    <p className="text-zinc-300 leading-relaxed">{selectedItem.description}</p>
+                   {selectedItem.driveLink && (
+                     <div className="mt-4 p-3.5 bg-gradient-to-r from-blue-950/20 to-zinc-900 border border-blue-500/20 rounded-xl flex items-center justify-between gap-4">
+                       <div className="space-y-0.5">
+                         <span className="text-[9px] uppercase font-tech text-blue-400 font-semibold tracking-wider">Ativos de Alta Fidelidade</span>
+                         <h4 className="text-xs text-white">Google Drive dos Posts & Vídeos</h4>
+                       </div>
+                       <a 
+                         href={selectedItem.driveLink} 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-400 text-zinc-950 hover:text-black font-semibold text-[10px] font-tech uppercase tracking-wide rounded-lg flex items-center gap-1.5 transition-all shadow-md select-none cursor-pointer"
+                       >
+                         Acessar Pasta <ExternalLink className="w-3 h-3" />
+                       </a>
+                     </div>
+                   )}
+									{selectedItem.captionText && (
+										<div className="mt-4 space-y-1.5 p-3.5 bg-zinc-900/60 border border-[#C5A059]/25 rounded-xl">
+											<div className="flex items-center justify-between text-[10px] text-[#C5A059] font-tech uppercase tracking-wider font-semibold border-b border-[#C5A059]/10 pb-1.5 mb-1.5">
+												<span>Legenda do Post (Aprovação em Tempo Real)</span>
+												<span className="text-zinc-500 font-normal hover:text-white cursor-pointer" onClick={() => navigator.clipboard.writeText(selectedItem.captionText || "")}>Copiar</span>
+											</div>
+											<p className="text-xs text-white leading-relaxed whitespace-pre-wrap select-all bg-zinc-950 p-3 rounded-lg border border-white/5 font-mono">
+												{selectedItem.captionText}
+											</p>
+										</div>
+									)}
                  </div>
 
                  {/* Audit Actions depending on Status */}

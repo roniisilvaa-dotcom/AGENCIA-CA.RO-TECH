@@ -1,3 +1,13 @@
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  tagline: string;
+  welcomeMessage?: string;
+  reachMultiplier: number;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -11,6 +21,7 @@ export interface Project {
   lastUpdate: string;
   comments: Comment[];
   assets: string[];
+  clientEmail?: string;
 }
 
 export interface Comment {
@@ -33,16 +44,29 @@ export interface Meeting {
     responsavel: string;
     prazo: string;
   }[];
+  clientEmail?: string;
 }
 
 export interface ApprovalItem {
   id: string;
   title: string;
-  type: "Arte" | "Vídeo" | "Campanha" | "Material Comercial";
+  type: "Arte" | "Vídeo" | "Campanha" | "Material Comercial" | "Post & Legenda";
   thumbnail: string;
   description: string;
+  captionText?: string; // Legenda do post para aprovação em tempo real
+  driveLink?: string; // Link direto do Google Drive com arquivos originais de posts e vídeos
   status: "Pendente" | "Aprovado" | "Ajustes Solicitados";
   feedback?: string[];
+  clientEmail?: string;
+}
+
+export interface ClientMessage {
+  id: string;
+  clientEmail: string;
+  senderName: string;
+  senderRole: "agency" | "client";
+  text: string;
+  timestamp: string;
 }
 
 export interface Publication {
@@ -53,6 +77,7 @@ export interface Publication {
   link?: string;
   fileUrl?: string;
   owner: string;
+  clientEmail?: string;
 }
 
 export interface PendingItem {
@@ -61,6 +86,7 @@ export interface PendingItem {
   deadline: string;
   description: string;
   type: "Aprovação" | "Informação" | "Material" | "Decisão";
+  clientEmail?: string;
 }
 
 export interface ResultMetrics {

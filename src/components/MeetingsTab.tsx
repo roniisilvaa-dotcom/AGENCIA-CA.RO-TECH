@@ -18,9 +18,14 @@ import { motion, AnimatePresence } from "motion/react";
 interface MeetingsTabProps {
   meetings: Meeting[];
   onAddMeeting: (meeting: Meeting) => void;
+  currentUser: {
+    role: "agency" | "client";
+    name: string;
+    email: string;
+  } | null;
 }
 
-export default function MeetingsTab({ meetings, onAddMeeting }: MeetingsTabProps) {
+export default function MeetingsTab({ meetings, onAddMeeting, currentUser }: MeetingsTabProps) {
   const [expandedId, setExpandedId] = useState<string | null>("meet-1");
   const [showAiForm, setShowAiForm] = useState<boolean>(false);
   const [rawText, setRawText] = useState<string>("");
@@ -130,13 +135,19 @@ export default function MeetingsTab({ meetings, onAddMeeting }: MeetingsTabProps
           <p className="text-xs text-zinc-400">Histórico unificado e inteligência analítica de atas operacionais.</p>
         </div>
 
-        <button
-          onClick={() => setShowAiForm(!showAiForm)}
-          className="px-4 py-2 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-900 border border-[#C5A059] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all shadow-md cursor-pointer self-stretch sm:self-auto justify-center"
-        >
-          <Sparkles className="w-4 h-4" />
-          {showAiForm ? "Ver Atas Antigas" : "Nova Reunião Inteligente (AI)"}
-        </button>
+        {currentUser?.role === "agency" ? (
+          <button
+            onClick={() => setShowAiForm(!showAiForm)}
+            className="px-4 py-2 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-900 border border-[#C5A059] rounded-xl text-xs font-semibold uppercase tracking-wider font-tech flex items-center gap-2 transition-all shadow-md cursor-pointer self-stretch sm:self-auto justify-center"
+          >
+            <Sparkles className="w-4 h-4" />
+            {showAiForm ? "Ver Atas Antigas" : "Nova Reunião Inteligente (AI)"}
+          </button>
+        ) : (
+          <div className="px-4 py-2 bg-zinc-900/60 border border-white/5 text-zinc-400 rounded-xl text-xs font-medium tracking-wide font-tech flex items-center gap-2 select-none self-stretch sm:self-auto justify-center">
+            <span>🔒 Gestão Exclusiva Agência</span>
+          </div>
+        )}
       </div>
 
       {/* AI compiler visual form / Regular Meetings Split */}
