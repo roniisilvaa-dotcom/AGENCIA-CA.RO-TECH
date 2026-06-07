@@ -85,7 +85,7 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
 
   // Map dynamic clients to Dynamic AI channels representation
   const dynamicChannels: DynamicChannel[] = clients.map(cli => {
-    const aiBrandName = `CA.RO - ${cli.name}`; // AS REQUESTED:  A IA fica com o nome CA.RO - MUNDI TKR
+    const aiBrandName = "CA.RO TECH IA"; // NOME DA IA CA.RO TECH IA
     
     // Custom strategic suggested questions
     const suggested: string[] = [
@@ -96,11 +96,11 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
 
     return {
       id: cli.id,
-      name: aiBrandName,
+      name: `${aiBrandName} - ${cli.name}`,
       clientName: cli.name,
       tagline: cli.tagline,
       unlockedForClientEmail: cli.email,
-      initialWelcome: `Olá! Sou o assessor inteligente integrado **${aiBrandName}** da CA.RO TECH. Posso responder qualquer dúvida operacional, listar o andamento real do que está sendo feito e detalhar o cronograma programado de marketing de altíssimo padrão.`,
+      initialWelcome: `Olá! Sou o assessor inteligente integrado **${aiBrandName}** do CA.RO ATELIER. Posso responder qualquer dúvida operacional, listar o andamento real do que está sendo feito e detalhar o cronograma programado de marketing de altíssimo padrão.`,
       suggestedQuestions: suggested
     };
   });
@@ -147,7 +147,7 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
     if (hasAccess(channel)) {
       setActiveChannelId(channel.id);
     } else {
-      setPermissionError(`Acesso bloqueado. Seus dados operacionais como cliente são isolados de forma estrita. O canal de inteligência de "${channel.clientName}" é restrito à sua respectiva diretoria ou aos administradores da CA.RO TECH.`);
+      setPermissionError(`Acesso bloqueado. Seus dados operacionais como cliente são isolados de forma estrita. O canal de inteligência de "${channel.clientName}" é restrito à sua respectiva diretoria ou aos administradores do CA.RO ATELIER.`);
     }
   };
 
@@ -221,7 +221,7 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
       } else if (query.includes("métrica") || query.includes("resultado") || query.includes("alcance") || query.includes("dado") || query.includes("número")) {
         fallbackText = `### Relatório Estratégico & Métricas de Performance\n\nOs resultados de veiculação e campanhas de prestígio de **${activeChannel.clientName}** indicam excelente progresso de autoridade de mercado:\n\n- **Taxa de Engajamento**: Ótimo aproveitamento do público em Alphaville.\n- **Visualizações (Impressões)**: Altos índices orgânicos consolidados pelas mídias de alto padrão.\n- **Geração de Oportunidades**: Clientes em potencial qualificados contactando diretamente o ecossistema.\n\n*Recomendamos manter o contraste sutil alemão e o Lightroom nobre como guia cromático das próximas postagens corporativas.*`;
       } else {
-        fallbackText = `### Atendente Exclusivo: **${activeChannel.name}**\n\nOlá! Analisei sua dúvida. No portal executivo da **CA.RO TECH**, todos os dados referentes aos projetos de **${activeChannel.clientName}** estão acessíveis e protegidos sob sigilo.\n\n- **O que está sendo feito**: Amostragem de cards, ensaios piloto de estúdio de alta sensibilidade e revisão sistemática cromática.\n- **O que está programado**: Posts com legendas ricas integradas à esteira para sua aprovação em tempo real antes de irem a público.\n\nComo posso ajudar você agora? Digite uma pergunta direta como *"O que está sendo feito?"* ou *"O que tem programado?"* para obter respostas concisas!`;
+        fallbackText = `### Atendente Exclusivo: **${activeChannel.name}**\n\nOlá! Analisei sua dúvida. No portal executivo do **CA.RO ATELIER**, todos os dados referentes aos projetos de **${activeChannel.clientName}** estão acessíveis e protegidos sob sigilo.\n\n- **O que está sendo feito**: Amostragem de cards, ensaios piloto de estúdio de alta sensibilidade e revisão sistemática cromática.\n- **O que está programado**: Posts com legendas ricas integradas à esteira para sua aprovação em tempo real antes de irem a público.\n\nComo posso ajudar você agora? Digite uma pergunta direta como *"O que está sendo feito?"* ou *"O que tem programado?"* para obter respostas concisas!`;
       }
 
       const aiMsgErr: Message = {

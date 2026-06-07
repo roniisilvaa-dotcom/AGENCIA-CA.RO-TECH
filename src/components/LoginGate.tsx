@@ -45,13 +45,13 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     const cleanPassword = password.trim();
 
     // Check Admin / Agency presets
-    if ((cleanEmail === "admcaro" || cleanEmail === "admcaro@carotech.com" || cleanEmail === "admcaro@caroimage.com") && cleanPassword === "admcaro") {
+    if ((cleanEmail === "admcaro" || cleanEmail === "admcaro@carotech.com" || cleanEmail === "admcaro@caroimage.com" || cleanEmail === "admcaro@caroatelier.com") && cleanPassword === "admcaro") {
       onLogin("agency", "Admin CA.RO (admcarotech)", "adm@carotech.com");
       return;
     } 
     
-    if ((cleanEmail === "agencia@carotech.com" || cleanEmail === "agencia@caroimage.com") && cleanPassword === "caro2026") {
-      onLogin("agency", "Carol (CA.RO TECH)", "agencia@carotech.com");
+    if ((cleanEmail === "agencia@carotech.com" || cleanEmail === "agencia@caroimage.com" || cleanEmail === "agencia@caroatelier.com") && cleanPassword === "caro2026") {
+      onLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
       return;
     }
 
@@ -73,7 +73,7 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     if (role === "admin") {
       onLogin("agency", "Admin CA.RO (admcarotech)", "adm@carotech.com");
     } else if (role === "agency") {
-      onLogin("agency", "Carol (CA.RO TECH)", "agencia@carotech.com");
+      onLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
     } else {
       // Role is email of a dynamic client
       const matched = clients.find(c => c.email === role);
@@ -106,14 +106,14 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-full text-[10px] text-[#E5D1B0] tracking-[0.2em] uppercase font-tech"
           >
-            <Compass className="w-3.5 h-3.5 animate-spin-slow text-[#C5A059]" /> CA.RO TECH ATELIER
+            <Compass className="w-3.5 h-3.5 animate-spin-slow text-[#C5A059]" /> CA.RO ATELIER
           </motion.div>
           <div className="space-y-1">
-            <h1 className="font-serif text-3xl md:text-4xl text-white tracking-[0.2em]">
-              CA.RO <span className="italic text-[#C5A059]">TECH</span>
+            <h1 className="font-serif text-3xl md:text-5xl text-white tracking-[0.25em]">
+              CA.RO <span className="italic text-[#C5A059]">ATELIER</span>
             </h1>
-            <p className="text-[10px] uppercase font-tech tracking-[0.25em] text-zinc-500">
-              Alta Costura Digital & Transparência Conectada
+            <p className="text-[10px] uppercase font-tech tracking-[0.25em] text-[#C5A059] font-medium">
+              Alta Costura Digital & Transparência Conectada — Alphaville
             </p>
           </div>
         </div>

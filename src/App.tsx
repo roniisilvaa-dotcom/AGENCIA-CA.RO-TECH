@@ -95,7 +95,7 @@ export default function App() {
       {
         id: "msg-init-1",
         clientEmail: "mundi@tkr.com",
-        senderName: "Carol (CA.RO TECH)",
+        senderName: "Carol (CA.RO ATELIER)",
         senderRole: "agency",
         text: "Bem-vindos ao nosso espaço unificado de Barueri. Deixem suas considerações ou avisos urgentes aqui para nossa equipe de criação síncrona.",
         timestamp: "07/06/2026, 14:00"
@@ -103,7 +103,7 @@ export default function App() {
       {
         id: "msg-init-2",
         clientEmail: "dadoskagiva@gmail.com",
-        senderName: "Carol (CA.RO TECH)",
+        senderName: "Carol (CA.RO ATELIER)",
         senderRole: "agency",
         text: "Olá equipe Kagiva Sports! Fuso de São Paulo sintonizado com Alphaville. Aguardamos sua revisão dos novos posts de alto impacto esportivo.",
         timestamp: "07/06/2026, 14:15"
@@ -224,7 +224,7 @@ export default function App() {
       case "reunioes":
         return <MeetingsTab meetings={meetings} onAddMeeting={handleAddMeeting} currentUser={currentUser} />;
       case "projetos":
-        return <ProjectsTab projects={projects} onAddProject={handleAddProject} onUpdateProject={handleUpdateProject} currentUser={currentUser} />;
+        return <ProjectsTab projects={projects} onAddProject={handleAddProject} onUpdateProject={handleUpdateProject} currentUser={currentUser} clients={clients} />;
       case "portal-ai":
         return <PortalAiTab projects={projects} currentUser={currentUser} />;
       case "aprovacoes":
@@ -232,7 +232,7 @@ export default function App() {
       case "publicacoes":
         return <PublicationsTab publications={publications} onAddPublication={handleAddPublication} currentUser={currentUser} />;
       case "resultados":
-        return <ResultsTab metrics={metrics} projects={projects} />;
+        return <ResultsTab metrics={metrics} projects={projects} clients={clients} publications={publications} currentUser={currentUser} />;
       case "pendencias":
         return <PendingsTab pendings={pendings} onAddPending={handleAddPending} onResolvePending={handleResolvePending} currentUser={currentUser} />;
       default:
@@ -274,8 +274,8 @@ export default function App() {
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-[#C5A059] rounded-full shrink-0"></div>
               <div className="flex flex-col">
-                <span className="font-serif text-lg tracking-[0.25em] text-white">CA.RO <span className="italic text-[#C5A059]">TECH</span></span>
-                <span className="text-[9px] text-[#C5A059] font-tech uppercase tracking-[0.3em] font-medium">Tecnologia & Transparência / Atelier</span>
+                <span className="font-serif text-lg tracking-[0.25em] text-white">CA.RO <span className="italic text-[#C5A059]">ATELIER</span></span>
+                <span className="text-[9px] text-[#C5A059] font-tech uppercase tracking-[0.3em] font-bold">Tecnologia Síncrona & Design de Luxo / Barueri</span>
               </div>
             </div>
             <div className="hidden sm:block h-6 w-[1px] bg-white/10" />
@@ -299,7 +299,7 @@ export default function App() {
                   if (currentUser.role === "agency") {
                     handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
                   } else {
-                    handleLogin("agency", "Carol (CA.RO TECH)", "agencia@carotech.com");
+                    handleLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
                   }
                 }}
                 className="text-[9px] font-tech text-[#C5A059] hover:text-white bg-zinc-950 px-2 py-1 rounded border border-[#C5A059]/20 hover:border-[#C5A059]/50 transition-all uppercase cursor-pointer"
@@ -437,7 +437,7 @@ export default function App() {
                       if (currentUser.role === "agency") {
                         handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
                       } else {
-                        handleLogin("agency", "Carol (CA.RO)", "agencia@caroimage.com");
+                        handleLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
                       }
                       setMobileMenuOpen(false);
                     }}
@@ -496,7 +496,7 @@ export default function App() {
             </div>
           </div>
           <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-normal text-center md:text-right">
-            CARO TECH ATELIER • Todos os Direitos Reservados • 2026
+            CA.RO ATELIER • Todos os Direitos Reservados • 2026
           </div>
         </div>
       </footer>

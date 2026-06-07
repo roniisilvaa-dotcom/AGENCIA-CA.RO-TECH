@@ -7,7 +7,7 @@ export const INITIAL_CLIENTS: Client[] = [
     email: "mundi@tkr.com",
     password: "mundi2026",
     tagline: "Alta Costura Automotiva & Chassi de Alta Performance",
-    welcomeMessage: "Sua mesa executiva integrada com a CA.RO TECH, de Alphaville à elite alemã.",
+    welcomeMessage: "Sua mesa executiva integrada com o CA.RO ATELIER, de Alphaville à elite alemã.",
     reachMultiplier: 1.0
   },
   {
@@ -16,7 +16,7 @@ export const INITIAL_CLIENTS: Client[] = [
     email: "dadoskagiva@gmail.com",
     password: "dadoskagiva",
     tagline: "Sensibilidade, Design & Tecnologia Estética em Artigos Esportivos",
-    welcomeMessage: "Conectado diretamente à Carol e célula criativa da CA.RO TECH.",
+    welcomeMessage: "Conectado diretamente à Carol e célula criativa do CA.RO ATELIER.",
     reachMultiplier: 1.45
   },
   {
@@ -35,7 +35,7 @@ export const INITIAL_PROJECTS: Project[] = [
     id: "proj-1",
     name: "Campanha Premium Mundi Racing Series",
     goal: "Apresentar a nova linha esportiva utilizando estética cinematográfica europeia, focando no público das pistas e clubes de elite.",
-    owner: "Carol (CA.RO TECH)",
+    owner: "Carol (CA.RO ATELIER)",
     startDate: "2026-06-01",
     endDate: "2026-06-25",
     priority: "Alta",
@@ -68,7 +68,7 @@ export const INITIAL_PROJECTS: Project[] = [
     id: "proj-2",
     name: "Conceito & Render 3D do Chassi Aliviado TKR",
     goal: "Projeto técnico-visual ilustrando a engenharia sofisticada alemã do produto, aproximando o cliente do chão de fábrica e a engenharia de precisão.",
-    owner: "Julio M. (CA.RO TECH)",
+    owner: "Julio M. (CA.RO ATELIER)",
     startDate: "2026-06-05",
     endDate: "2026-07-10",
     priority: "Alta",
@@ -92,8 +92,8 @@ export const INITIAL_PROJECTS: Project[] = [
   {
     id: "proj-3",
     name: "Editorial TKR Alphaville Tendências",
-    goal: "Lançamento oficial da integração física da CA.RO TECH em Alphaville - SP, conectando fornecedores e tendências do mercado de altíssimo padrão brasileiro.",
-    owner: "Carol (CA.RO TECH)",
+    goal: "Lançamento oficial da integração física do CA.RO ATELIER em Alphaville - SP, conectando fornecedores e tendências do mercado de altíssimo padrão brasileiro.",
+    owner: "Carol (CA.RO ATELIER)",
     startDate: "2026-05-20",
     endDate: "2026-06-15",
     priority: "Média",
@@ -110,7 +110,7 @@ export const INITIAL_PROJECTS: Project[] = [
     id: "proj-k1",
     name: "Branding Visual Kagiva Pro Line - Novas Embalagens",
     goal: "Redefinir a linguagem artística das embalagens profissionais Kagiva Sports de alta performance, utilizando cores refinadas e acabamento fosco com hot-stamping dourado.",
-    owner: "Carol (CA.RO TECH)",
+    owner: "Carol (CA.RO ATELIER)",
     startDate: "2026-06-02",
     endDate: "2026-06-28",
     priority: "Alta",
@@ -127,8 +127,8 @@ export const INITIAL_PROJECTS: Project[] = [
   {
     id: "proj-k2",
     name: "Ensaio Fotográfico Conceito 'Kagiva Move 2026'",
-    goal: "Capturar o dinamismo e a elegância dos materiais Kagiva sob a ótica luxuosa da CA.RO TECH em estúdio fechado com iluminação de alto contraste alemão.",
-    owner: "Lucas H. (CA.RO TECH)",
+    goal: "Capturar o dinamismo e a elegância dos materiais Kagiva sob a ótica luxuosa do CA.RO ATELIER em estúdio fechado com iluminação de alto contraste alemão.",
+    owner: "Lucas H. (CA.RO ATELIER)",
     startDate: "2026-06-04",
     endDate: "2026-06-30",
     priority: "Média",
@@ -156,7 +156,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     id: "meet-1",
     date: "2026-06-02",
     title: "Kickoff e Integração: Transparência Ativa Mundi TKR",
-    attendees: ["Carol (CA.RO TECH)", "Julio M. (CA.RO TECH)", "Diretor Comercial (Mundi)", "Marketing Mundi"],
+    attendees: ["Carol (CA.RO ATELIER)", "Julio M. (CA.RO ATELIER)", "Diretor Comercial (Mundi)", "Marketing Mundi"],
     agenda: "Apresentar a nova mecânica de trabalho em Alphaville; estabelecer a rotina de reuniões semanais de progresso e definir o uso do portal executivo.",
     decisions: [
       "Rotina fixa estabelecida: Reuniões de Produto e Marketing todas as terças e quintas-feiras.",
@@ -165,7 +165,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     nextActions: [
       {
         acao: "Disponibilizar os primeiros renders 3D do chassi",
-        responsavel: "Julio M. (CA.RO TECH)",
+        responsavel: "Julio M. (CA.RO ATELIER)",
         prazo: "2026-06-08"
       },
       {
@@ -180,7 +180,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     id: "meet-k1",
     date: "2026-06-05",
     title: "Briefing de Posicionamento Estético Kagiva Sports",
-    attendees: ["Carol (CA.RO TECH)", "Lucas H. (CA.RO TECH)", "Equipe Marketing Kagiva"],
+    attendees: ["Carol (CA.RO ATELIER)", "Lucas H. (CA.RO ATELIER)", "Equipe Marketing Kagiva"],
     agenda: "Alinhar o cronograma de entregas virtuais (posts & legendas) e estabelecer a esteira de aprovação síncrona no Portal.",
     decisions: [
       "Disponibilização imediata do módulo 'Post & Legenda' para aprovação em tempo real.",
@@ -189,12 +189,12 @@ export const INITIAL_MEETINGS: Meeting[] = [
     nextActions: [
       {
         acao: "Finalizar primeiro ensaio piloto no estúdio",
-        responsavel: "Lucas H. (CA.RO TECH)",
+        responsavel: "Lucas H. (CA.RO ATELIER)",
         prazo: "2026-06-10"
       },
       {
         acao: "Subir os primeiros posts com legendas refinadas para a diretoria Kagiva",
-        responsavel: "Carol (CA.RO TECH)",
+        responsavel: "Carol (CA.RO ATELIER)",
         prazo: "2026-06-08"
       }
     ],
@@ -251,9 +251,9 @@ export const INITIAL_PUBLICATIONS: Publication[] = [
     id: "pub-1",
     date: "2026-05-28",
     channel: "LinkedIn",
-    title: "Nova Era de Design Técnico: CA.RO TECH e a Inovação em Alphaville",
+    title: "Nova Era de Design Técnico: CA.RO ATELIER e a Inovação em Alphaville",
     link: "https://linkedin.com",
-    owner: "Julio M. (CA.RO TECH)",
+    owner: "Julio M. (CA.RO ATELIER)",
     clientEmail: "mundi@tkr.com"
   },
   {
@@ -262,7 +262,7 @@ export const INITIAL_PUBLICATIONS: Publication[] = [
     channel: "Instagram",
     title: "Série Elegância Dinâmica: Ensaio Autoral Mundi TKR",
     link: "https://instagram.com",
-    owner: "Carol (CA.RO TECH)",
+    owner: "Carol (CA.RO ATELIER)",
     clientEmail: "mundi@tkr.com"
   },
   {
@@ -271,7 +271,7 @@ export const INITIAL_PUBLICATIONS: Publication[] = [
     channel: "Instagram",
     title: "Lançamento Prévia: Detalhes da Linha Kagiva Premium",
     link: "https://instagram.com",
-    owner: "Carol (CA.RO TECH)",
+    owner: "Carol (CA.RO ATELIER)",
     clientEmail: "dadoskagiva@gmail.com"
   }
 ];

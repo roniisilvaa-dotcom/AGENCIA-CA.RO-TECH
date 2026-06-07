@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Project, Comment } from "../types";
+import React, { useState, useEffect } from "react";
+import { Project, Comment, Client } from "../types";
 import { 
   Plus, 
   User, 
@@ -24,7 +24,9 @@ import {
   Activity,
   Award,
   Zap,
-  Globe
+  Globe,
+  Loader2,
+  Bot
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -37,6 +39,7 @@ interface ProjectsTabProps {
     name: string;
     email: string;
   } | null;
+  clients?: Client[];
 }
 
 const pipelineStages: Project["status"][] = [
@@ -61,7 +64,7 @@ const stageColors: Record<string, string> = {
   "Publicação": "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
 };
 
-export default function ProjectsTab({ projects, onAddProject, onUpdateProject, currentUser }: ProjectsTabProps) {
+export default function ProjectsTab({ projects, onAddProject, onUpdateProject, currentUser, clients = [] }: ProjectsTabProps) {
   const [activeProjectFilter, setActiveProjectFilter] = useState<string>("all");
   const [showPlanForm, setShowPlanForm] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
@@ -69,11 +72,88 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject, c
   // New project creation state
   const [newName, setNewName] = useState("");
   const [newGoal, setNewGoal] = useState("");
-  const [newOwner, setNewOwner] = useState("Carol (CA.RO TECH)");
+  const [newOwner, setNewOwner] = useState("Carol (CA.RO ATELIER)");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
   const [newPriority, setNewPriority] = useState<Project["priority"]>("Média");
   const [newStatus, setNewStatus] = useState<Project["status"]>("Briefing");
+  const [newClientEmail, setNewClientEmail] = useState("");
+
+  // AI Briefing Generator states
+  const [rawConcept, setRawConcept] = useState("");
+  const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
+  const [briefingError, setBriefingError] = useState<string | null>(null);
+  const [showAiBriefPanel, setShowAiBriefPanel] = useState(false);
+
+  useEffect(() => {
+    if (currentUser?.role === "client") {
+      setNewClientEmail(currentUser.email);
+    } else if (clients && clients.length > 0) {
+      setNewClientEmail(clients[0].email);
+    }
+  }, [clients, currentUser]);
+
+  const handleGenerateAiBriefing = async () => {
+    if (!rawConcept.trim()) return;
+    setIsGeneratingBriefing(true);
+    setBriefingError(null);
+    try {
+      const activeClientName = clients.find(c => c.email === newClientEmail)?.name || "Mundi TKR";
+      const res = await fetch("/api/generate-project-briefing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName: activeClientName,
+          rawConcept: rawConcept
+        })
+      });
+
+      if (!res.ok) throw new Error("Erro de comunicação.");
+      const data = await res.json();
+      
+      if (data.refinedTitle) setNewName(data.refinedTitle);
+      
+      let goalsAndAesthetic = data.refinedGoal;
+      if (data.visualDirections && data.visualDirections.length > 0) {
+        goalsAndAesthetic += "\n\nDiretrizes Visuais Recomendadas:\n" + data.visualDirections.map((dir: string) => `- ${dir}`).join("\n");
+      }
+      if (goalsAndAesthetic) setNewGoal(goalsAndAesthetic);
+      
+      if (data.suggestedPriority) setNewPriority(data.suggestedPriority);
+      if (data.owner) setNewOwner(data.owner);
+      
+      // Auto-fill dates too for convenient scheduling (e.g. today to +20 days)
+      const today = new Date().toISOString().split("T")[0];
+      const future = new Date();
+      future.setDate(future.getDate() + 20);
+      const futureStr = future.toISOString().split("T")[0];
+      setNewStart(today);
+      setNewEnd(futureStr);
+
+      setShowAiBriefPanel(false);
+      setRawConcept("");
+    } catch (err: any) {
+      console.error(err);
+      setBriefingError("Inconsistência síncrona na nuvem. Gerando rascunho de preenchimento inteligente.");
+      
+      // Fine-crafted fallback
+      setNewName(`Campanha Estética de Precisão • ${clients.find(c => c.email === newClientEmail)?.name || "Mundi TKR"}`);
+      setNewGoal(`Concepção de mídias de alto nível para divulgar o conceito "${rawConcept}".\n\nDiretrizes Visuais:\n- Acabamento fino com iluminação direcionada alemã.\n- Contraste sutil e uso do desfoque elegante.`);
+      setNewPriority("Alta");
+      setNewOwner("Carol (CA.RO ATELIER)");
+      
+      const today = new Date().toISOString().split("T")[0];
+      const future = new Date();
+      future.setDate(future.getDate() + 15);
+      setNewStart(today);
+      setNewEnd(future.toISOString().split("T")[0]);
+      
+      setShowAiBriefPanel(false);
+      setRawConcept("");
+    } finally {
+      setIsGeneratingBriefing(false);
+    }
+  };
 
   // Selected project drawer details
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projects[0]?.id || null);
@@ -109,7 +189,8 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject, c
       progress: progressMap[newStatus] || 10,
       lastUpdate: "Fluxo de projeto criado estritamente via portal de transparência.",
       comments: [],
-      assets: []
+      assets: [],
+      clientEmail: newClientEmail
     };
 
     onAddProject(nProj);
@@ -355,12 +436,92 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject, c
             >
               <X className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 border-b border-white/5 pb-3 mb-5">
-              <Layers className="w-4.5 h-4.5 text-[#C5A059]" />
-              <h3 className="font-serif text-lg text-white">Novo Projeto de Gestão Remota</h3>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-3 mb-5">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4.5 h-4.5 text-[#C5A059]" />
+                <h3 className="font-serif text-lg text-white">Novo Projeto de Gestão Remota</h3>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setShowAiBriefPanel(!showAiBriefPanel)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C5A059]/10 hover:bg-[#C5A059]/20 border border-[#C5A059]/25 text-[#E5D1B0] rounded-xl text-xs font-medium tracking-wide font-tech transition-all cursor-pointer self-start md:self-auto"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#C5A059] animate-pulse" />
+                <span>Gerar Briefing por CA.RO TECH IA</span>
+              </button>
             </div>
 
+            {/* AI Generator Panel Overlay */}
+            <AnimatePresence>
+              {showAiBriefPanel && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden mb-5"
+                >
+                  <div className="p-4 bg-zinc-900 border border-[#C5A059]/20 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-white font-medium">
+                      <Bot className="w-4 h-4 text-[#C5A059]" />
+                      <span>Estúdio de Briefing Síncrono • CA.RO TECH IA</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400">
+                      Escreva um conceito livre e rápido (ex: <i>"fotos aéreas em Alphaville com os carros, contraste cinza"</i>). Nossa inteligência estruturará de forma requintada o título, os objetivos de alto impacto e completará as datas previstas.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="flex-1 text-xs bg-zinc-950 border border-white/10 rounded-lg p-2 text-white placeholder-zinc-600 focus:border-[#C5A059] outline-none"
+                        placeholder="Rabiscar conceito técnico..."
+                        value={rawConcept}
+                        onChange={(e) => setRawConcept(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleGenerateAiBriefing()}
+                        disabled={isGeneratingBriefing}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateAiBriefing}
+                        disabled={isGeneratingBriefing || !rawConcept.trim()}
+                        className="px-4 py-2 bg-[#C5A059] hover:bg-[#E5D1B0] disabled:bg-zinc-800 disabled:text-zinc-500 text-zinc-900 rounded-lg text-xs font-semibold tracking-wider uppercase font-tech flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        {isGeneratingBriefing ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Processando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Gerar</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    {briefingError && (
+                      <p className="text-[10px] text-rose-400 font-mono">{briefingError}</p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <form onSubmit={handleCreateProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentUser?.role === "agency" && (
+                <div className="md:col-span-2 bg-[#111] p-3 border border-white/5 rounded-xl">
+                  <label className="block text-[10px] text-[#C5A059] uppercase tracking-wider font-tech mb-1.5 font-medium">Cliente Alvo do Projeto</label>
+                  <select
+                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none"
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                  >
+                    {clients.map(cli => (
+                      <option key={cli.id} value={cli.email}>{cli.name} — {cli.email}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-[10px] text-[#C5A059] uppercase tracking-wider font-tech mb-1">Nome do Projeto</label>

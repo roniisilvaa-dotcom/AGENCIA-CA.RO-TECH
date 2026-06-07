@@ -1,6 +1,6 @@
 {
   "name": "CA.RO TECH",
-  "description": "Plataforma de alta costura digital e transparência operacional para a agência CA.RO e seus seletos parceiros executivos como a Mundi TKR.",
+  "description": "Plataforma de alta costura digital e transparência operacional para a agência CA.RO ATELIER e seus seletos parceiros executivos como a Mundi TKR.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

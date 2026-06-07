@@ -137,15 +137,15 @@ export default function DashboardTab({
   // Meet/Calendar events filter
   const getEventsForDay = (day: string) => {
     const defaultMeetings: Record<string, { time: string; title: string; category: string; host: string }[]> = {
-      "Segunda": [{ time: "09:00", title: "Brainstorming Criativo - Novos Conceitos", category: "Concepção", host: "Carol (CA.RO TECH)" }],
+      "Segunda": [{ time: "09:00", title: "Brainstorming Criativo - Novos Conceitos", category: "Concepção", host: "Carol (CA.RO ATELIER)" }],
       "Terça": [
-        { time: "10:30", title: "Review de Linhas & Renders Técnicos", category: "Alinhamento", host: "Julio M. (CA.RO TECH)" },
-        { time: "15:00", title: "Apresentação de Campanha e Posts de Mídia", category: "Aprovação", host: "Carol (CA.RO TECH)" }
+        { time: "10:30", title: "Review de Linhas & Renders Técnicos", category: "Alinhamento", host: "Julio M. (CA.RO ATELIER)" },
+        { time: "15:00", title: "Apresentação de Campanha e Posts de Mídia", category: "Aprovação", host: "Carol (CA.RO ATELIER)" }
       ],
       "Quarta": [{ time: "14:00", title: "Análise de Métricas do Lightroom Estético", category: "Performance", host: "Marketing Central" }],
-      "Quinta": [{ time: "10:30", title: "Alinhamento Estratégico de Marcas Ativas", category: "Comercial", host: "Julio M. (CA.RO TECH)" }],
+      "Quinta": [{ time: "10:30", title: "Alinhamento Estratégico de Marcas Ativas", category: "Comercial", host: "Julio M. (CA.RO ATELIER)" }],
       "Sexta": [
-        { time: "11:00", title: "Fechamento de Pautas Semanais", category: "Planejamento", host: "Lucas H. (CA.RO TECH)" },
+        { time: "11:00", title: "Fechamento de Pautas Semanais", category: "Planejamento", host: "Lucas H. (CA.RO ATELIER)" },
         { time: "16:00", title: "Entrega Geral & Transparência Real-Time", category: "Gestão", host: "Conselho CA.RO" }
       ]
     };
@@ -182,7 +182,7 @@ export default function DashboardTab({
       email: cleanEmail,
       password: newClientPassword.trim() || "caro2026",
       tagline: newClientTagline.trim() || "Nova Célula Executiva Cadastrada",
-      welcomeMessage: "Sua mesa exclusiva de design técnico com a CA.RO TECH.",
+      welcomeMessage: "Sua mesa exclusiva de design técnico com o CA.RO ATELIER.",
       reachMultiplier: Number((Math.random() * 0.5 + 1.0).toFixed(2)) // random multiplier between 1.0 and 1.5
     };
 
@@ -254,7 +254,7 @@ export default function DashboardTab({
     e.preventDefault();
     if (!directMsgText.trim()) return;
 
-    const senderName = currentUser?.name || "Carol (CA.RO TECH)";
+    const senderName = currentUser?.name || "Carol (CA.RO ATELIER)";
     const senderRole = currentUser?.role || "agency";
 
     const newMsg: ClientMessage = {
@@ -286,7 +286,7 @@ export default function DashboardTab({
             <MapPin className="w-3.5 h-3.5 text-[#C5A059]" /> ALLPHAVILE EMPRESARIAL - BARUERI
           </div>
           <h1 className="font-serif text-2xl md:text-3.5xl text-[#F8F9FA] tracking-tight leading-none">
-            Mesa de Transparência <span className="italic text-[#E5D1B0]">CA.RO TECH</span>
+            Mesa de Transparência <span className="italic text-[#C5A035]">CA.RO ATELIER</span>
           </h1>
           <p className="text-zinc-300 text-xs md:text-sm leading-relaxed font-light">
             Olá, <strong className="text-white font-medium">{currentUser?.name || "Prezado Partner"}</strong> ({currentUser?.role === "agency" ? "Diretora Suprema" : `${matchedClientObj?.name || "Cliente Conectado"}`}). 
@@ -481,9 +481,9 @@ export default function DashboardTab({
           <div className="bg-zinc-900/60 p-3.5 border border-white/5 rounded-xl mt-4 flex items-center justify-between gap-4">
             <div>
               <div className="text-[9px] uppercase text-[#C5A059] tracking-wider font-tech font-bold">Ponto de Contato</div>
-              <div className="text-xs text-white tracking-tight mt-0.5 truncate">Suporte Executivo CA.RO TECH</div>
+              <div className="text-xs text-white tracking-tight mt-0.5 truncate">Suporte Executivo CA.RO ATELIER</div>
             </div>
-            <span className="text-[10px] text-zinc-400 font-tech font-normal">atendimento@carotech.com</span>
+            <span className="text-[10px] text-zinc-400 font-tech font-normal">atendimento@caroatelier.com</span>
           </div>
         </motion.div>
 
@@ -573,7 +573,7 @@ export default function DashboardTab({
                 <div className="h-full flex flex-col items-center justify-center text-center text-zinc-500 py-16">
                   <MessageSquare className="w-8 h-8 text-zinc-600 mb-2 stroke-1" />
                   <p className="text-xs font-semibold">Este canal está configurado e pronto.</p>
-                  <p className="text-[10px] text-zinc-600 mt-1">Insira mensagens abaixo para interagir com a CA.RO TECH.</p>
+                  <p className="text-[10px] text-zinc-600 mt-1">Insira mensagens abaixo para interagir com o CA.RO ATELIER.</p>
                 </div>
               )}
             </div>
