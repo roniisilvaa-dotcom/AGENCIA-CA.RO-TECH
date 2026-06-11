@@ -73,7 +73,7 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     if (role === "admin") {
       onLogin("agency", "Admin CA.RO (admcarotech)", "adm@carotech.com");
     } else if (role === "agency") {
-      onLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
+      onLogin("agency", "Agência CA.RO TECH", "agencia@carotech.com");
     } else {
       // Role is email of a dynamic client
       const matched = clients.find(c => c.email === role);

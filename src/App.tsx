@@ -75,6 +75,13 @@ export default function App() {
     localStorage.removeItem("caro_login");
   };
 
+  const handleResetSystem = () => {
+    if (confirm("Aviso supremo: Deseja realmente ZERAR e limpar todo o banco de dados local do sistema? Isso apagará todos os clientes, projetos, pendências e mensagens cadastrados.")) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   // Core App states persisting seamlessly inside localStorage
   const [projects, setProjects] = useState<Project[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -313,9 +320,17 @@ export default function App() {
                   {currentUser.role === "agency" ? "Acesso Agência" : "Acesso Cliente / Auditor"}
                 </span>
               </div>
+              {currentUser.role === "agency" && (
+                <button
+                  onClick={handleResetSystem}
+                  className="text-[9px] font-tech text-amber-550 hover:text-amber-455 hover:bg-amber-500/10 px-2 py-1 rounded transition-all uppercase cursor-pointer font-bold"
+                >
+                  Zerar Sistema
+                </button>
+              )}
               <button
                 onClick={handleLogout}
-                className="text-[9px] font-tech text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-2 py-1 rounded transition-all uppercase cursor-pointer font-bold"
+                className="text-[9px] font-tech text-rose-450 hover:text-rose-400 hover:bg-rose-500/10 px-2 py-1 rounded transition-all uppercase cursor-pointer font-bold"
               >
                 Sair
               </button>
