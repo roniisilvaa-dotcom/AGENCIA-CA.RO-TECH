@@ -867,475 +867,111 @@ export default function DashboardTab({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="luxury-card p-6 rounded-2xl border border-[#C5A059]/40 bg-zinc-950/60"
+          className="luxury-card p-6 rounded-2xl border border-white/10 bg-zinc-950/60"
         >
           <div className="flex items-center gap-2 border-b border-white/10 pb-4 mb-6">
             <div className="p-2 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-xl text-[#C5A059]">
-              <Users className="w-5 h-5 animate-pulse" />
+              <UploadCloud className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="font-serif text-xl text-white tracking-tight leading-none">Console de Administração do Partner</h3>
-              <p className="text-[11px] text-zinc-400 mt-1">Crie ambientes isolados com o Espaço do Cliente completo e submeta posts com legendas ricas para aprovação imediata.</p>
+              <h3 className="font-serif text-xl text-white tracking-tight leading-none">Console de Envio de Conteúdo</h3>
+              <p className="text-[11px] text-zinc-400 mt-1">Submeta novos posts, artes e legendas ricas para a mesa de aprovação imediata do cliente.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* COLUMN 1: Register New Client */}
-            <div className="space-y-4">
-              {editingClient ? (
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold text-[#C5A059] uppercase font-tech tracking-wider">Editar Cliente: {editingClient.name}</span>
-                    <button 
-                      type="button"
-                      onClick={() => setEditingClient(null)}
-                      className="text-[10px] text-zinc-400 hover:text-white uppercase font-tech font-bold cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                  <form onSubmit={handleEditClientSubmit} className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
-                        <input
-                          type="text"
-                          required
-                          value={editClientName}
-                          onChange={(e) => setEditClientName(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">CNPJ da Empresa</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: 98.765.432/0001-11"
-                          value={editClientCnpj}
-                          onChange={(e) => setEditClientCnpj(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-500 uppercase tracking-widest font-tech mb-1">E-mail de Login (Não editável)</label>
-                        <input
-                          type="email"
-                          disabled
-                          value={editingClient.email}
-                          className="w-full text-xs bg-zinc-950 border border-white/5 opacity-50 rounded-lg p-2.5 text-zinc-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
-                        <input
-                          type="text"
-                          value={editClientPassword}
-                          onChange={(e) => setEditClientPassword(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan de Luxo</label>
-                        <input
-                          type="text"
-                          value={editClientTagline}
-                          onChange={(e) => setEditClientTagline(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">URL da Logomarca (Imagem)</label>
-                        <input
-                          type="text"
-                          value={editClientLogoUrl}
-                          onChange={(e) => setEditClientLogoUrl(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
-                        <input
-                          type="url"
-                          value={editClientWebsite}
-                          onChange={(e) => setEditClientWebsite(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Status da Conta</label>
-                        <select
-                          value={editClientStatus}
-                          onChange={(e) => setEditClientStatus(e.target.value as "Ativo" | "Inativo" | "Suspenso")}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer"
-                        >
-                          <option value="Ativo">🟢 Ativo</option>
-                          <option value="Inativo">🟡 Inativo</option>
-                          <option value="Suspenso">🔴 Suspenso</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
-                        <input
-                          type="text"
-                          value={editClientInstagram}
-                          onChange={(e) => setEditClientInstagram(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">LinkedIn (Username)</label>
-                        <input
-                          type="text"
-                          value={editClientLinkedin}
-                          onChange={(e) => setEditClientLinkedin(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Completo</label>
-                      <input
-                        type="text"
-                        value={editClientAddress}
-                        onChange={(e) => setEditClientAddress(e.target.value)}
-                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
-                    >
-                      <Edit className="w-3.5 h-3.5" /> Salvar Alterações
-                    </button>
-                  </form>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="p-1 bg-[#C5A059]/15 rounded text-[#C5A059]">
-                      <UserPlus className="w-4 h-4" />
-                    </span>
-                    <span className="text-xs font-bold text-[#E5D1B0] uppercase font-tech tracking-wider">1. Cadastrar Novo Cliente (Espaço Completo)</span>
-                  </div>
-
-                  {clientRegSuccess && (
-                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-start gap-2">
-                      <Check className="w-4 h-4 shrink-0 mt-0.5" />
-                      <p className="font-mono">{clientRegSuccess}</p>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleRegisterClientSubmit} className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Ex: Kagiva Sports"
-                          value={newClientName}
-                          onChange={(e) => setNewClientName(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">CNPJ da Empresa</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: 98.765.432/0001-11"
-                          value={newClientCnpj}
-                          onChange={(e) => setNewClientCnpj(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Login E-mail</label>
-                        <input
-                          type="email"
-                          required
-                          placeholder="Ex: dadoskagiva@gmail.com"
-                          value={newClientEmail}
-                          onChange={(e) => setNewClientEmail(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
-                        <input
-                          type="text"
-                          placeholder="Default: dadoskagiva"
-                          value={newClientPassword}
-                          onChange={(e) => setNewClientPassword(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan de Luxo</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: Sensibilidade & Design Esportivo"
-                          value={newClientTagline}
-                          onChange={(e) => setNewClientTagline(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">URL da Logomarca (Imagem)</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: https://images.unsplash.com/..."
-                          value={newClientLogoUrl}
-                          onChange={(e) => setNewClientLogoUrl(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
-                        <input
-                          type="url"
-                          placeholder="Ex: https://kagivasports.com.br"
-                          value={newClientWebsite}
-                          onChange={(e) => setNewClientWebsite(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Status da Conta</label>
-                        <select
-                          value={newClientStatus}
-                          onChange={(e) => setNewClientStatus(e.target.value as "Ativo" | "Inativo" | "Suspenso")}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer"
-                        >
-                          <option value="Ativo">🟢 Ativo</option>
-                          <option value="Inativo">🟡 Inativo</option>
-                          <option value="Suspenso">🔴 Suspenso</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: @kagiva.sports"
-                          value={newClientInstagram}
-                          onChange={(e) => setNewClientInstagram(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">LinkedIn (Username)</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: kagiva-sports"
-                          value={newClientLinkedin}
-                          onChange={(e) => setNewClientLinkedin(e.target.value)}
-                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Completo</label>
-                      <input
-                        type="text"
-                        placeholder="Ex: Avenida do Esporte, 450 - Barueri, São Paulo"
-                        value={newClientAddress}
-                        onChange={(e) => setNewClientAddress(e.target.value)}
-                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
-                    >
-                      <UserPlus className="w-3.5 h-3.5" /> Efetuar Cadastro
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* List of current dynamic clients */}
-              <div className="pt-4 border-t border-white/5 space-y-2">
-                <span className="block text-[9px] text-zinc-500 uppercase tracking-widest font-tech font-bold">Contas Conectadas e Ativas:</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {clients.map(cli => (
-                    <div key={cli.id} className="p-2.5 bg-zinc-900/60 rounded-xl border border-white/5 flex flex-col justify-between">
-                      <div className="flex justify-between items-center">
-                        <strong className="text-[#E5D1B0] font-tech font-semibold">{cli.name}</strong>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[8px] bg-zinc-950 border border-white/5 px-1.5 py-0.5 rounded text-zinc-400 font-bold">{cli.reachMultiplier}x</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingClient(cli);
-                              setEditClientName(cli.name);
-                              setEditClientTagline(cli.tagline);
-                              setEditClientCnpj(cli.cnpj || "");
-                              setEditClientLogoUrl(cli.logoUrl || "");
-                              setEditClientWebsite(cli.website || "");
-                              setEditClientInstagram(cli.instagram || "");
-                              setEditClientLinkedin(cli.linkedin || "");
-                              setEditClientAddress(cli.address || "");
-                              setEditClientStatus(cli.status || "Ativo");
-                              setEditClientPassword(cli.password || "");
-                            }}
-                            className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-amber-500/10 transition-colors cursor-pointer"
-                            title="Editar Cliente"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirm(`Aviso supremo: Deseja realmente EXCLUIR e expurgar a conta de "${cli.name}" (${cli.email})?`)) {
-                                onDeleteClient(cli.id);
-                              }
-                            }}
-                            className="text-rose-450 hover:text-rose-400 p-1 rounded hover:bg-rose-500/10 transition-colors cursor-pointer"
-                            title="Deletar Cliente"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      <span className="text-[10px] text-zinc-400 font-mono mt-1 select-all">{cli.email}</span>
-                      <span className="text-[9px] text-zinc-500 italic truncate mt-0.5 font-light">"{cli.tagline}"</span>
-                    </div>
-                  ))}
-                </div>
+          <div className="max-w-3xl mx-auto space-y-4">
+            {postUploadSuccess && (
+              <div className="p-3 bg-[#C5A059]/10 border border-[#C5A059]/20 text-[#E5D1B0] text-xs rounded-xl flex items-start gap-2">
+                <Check className="w-4 h-4 shrink-0 mt-0.5" />
+                <p>{postUploadSuccess}</p>
               </div>
-            </div>
+            )}
 
-            {/* COLUMN 2: Upload Post & Legenda For approval */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="p-1 bg-[#C5A059]/15 rounded text-[#C5A059]">
-                  <UploadCloud className="w-4 h-4" />
-                </span>
-                <span className="text-xs font-bold text-[#E5D1B0] uppercase font-tech tracking-wider">2. Subir Post & Legenda para Aprovação</span>
-              </div>
-
-              {postUploadSuccess && (
-                <div className="p-3 bg-[#C5A059]/10 border border-[#C5A059]/20 text-[#E5D1B0] text-xs rounded-xl flex items-start gap-2">
-                  <Check className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p>{postUploadSuccess}</p>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmeterPostSubmit} className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Destinatário (Selecione o Cliente)</label>
-                    <select
-                      value={selectedPostClient}
-                      onChange={(e) => setSelectedPostClient(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 focus:border-[#C5A059] rounded-lg p-2.5 text-white outline-none transition-all cursor-pointer"
-                    >
-                      {clients.map(cli => (
-                        <option key={cli.id} value={cli.email}>{cli.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Título do Post / Arte</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: Coleção Gold Edition Feed 1"
-                      value={postTitle}
-                      onChange={(e) => setPostTitle(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
+            <form onSubmit={handleSubmeterPostSubmit} className="space-y-3.5 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Legenda Oficial do Post (Visualização Real-time)</label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="🏆 Onde o design encontra a alta performance... Insira hashtags, quebras de linha e textos com copys excelentes."
-                    value={postCaption}
-                    onChange={(e) => setPostCaption(e.target.value)}
-                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all resize-none font-sans"
-                  />
+                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Destinatário (Selecione o Cliente)</label>
+                  <select
+                    value={selectedPostClient}
+                    onChange={(e) => setSelectedPostClient(e.target.value)}
+                    className="w-full text-xs bg-zinc-900 border border-white/10 focus:border-[#C5A059] rounded-lg p-2.5 text-white outline-none transition-all cursor-pointer"
+                  >
+                    {clients.map(cli => (
+                      <option key={cli.id} value={cli.email}>{cli.name}</option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Escolher Pre-set Visual (Wallpaper de Altura)</label>
-                    <select
-                      value={postImagePreset}
-                      onChange={(e) => setPostImagePreset(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 focus:border-[#C5A059] rounded-lg p-2.5 text-white outline-none transition-all cursor-pointer"
-                    >
-                      {IMAGE_PRESETS.map((img, i) => (
-                        <option key={i} value={img.url}>{img.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Metas / Notas Estratégicas</label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Feed Instagram Orgânico e Anúncios."
-                      value={postDescription}
-                      onChange={(e) => setPostDescription(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
+                
                 <div>
-                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">
-                    Link do Google Drive (Opcional - Pasta para Vídeos ou Ativos de Alta Definição)
-                  </label>
+                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Título do Post / Arte</label>
                   <input
-                    type="url"
-                    placeholder="https://drive.google.com/drive/folders/..."
-                    value={postDriveLink}
-                    onChange={(e) => setPostDriveLink(e.target.value)}
-                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-[#E5D1B0] focus:border-[#C5A035] outline-none transition-all font-mono"
+                    type="text"
+                    required
+                    placeholder="Ex: Coleção Gold Edition Feed 1"
+                    value={postTitle}
+                    onChange={(e) => setPostTitle(e.target.value)}
+                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
                   />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2 shadow-lg"
-                >
-                  <UploadCloud className="w-3.5 h-3.5" /> Enviar Post & Legenda para o Portal
-                </button>
-              </form>
-            </div>
+              <div>
+                <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Legenda Oficial do Post (Visualização Real-time)</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="🏆 Onde o design encontra a alta performance... Insira hashtags, quebras de linha e textos com copys excelentes."
+                  value={postCaption}
+                  onChange={(e) => setPostCaption(e.target.value)}
+                  className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all resize-none font-sans"
+                />
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Escolher Pre-set Visual (Wallpaper de Altura)</label>
+                  <select
+                    value={postImagePreset}
+                    onChange={(e) => setPostImagePreset(e.target.value)}
+                    className="w-full text-xs bg-zinc-900 border border-white/10 focus:border-[#C5A059] rounded-lg p-2.5 text-white outline-none transition-all cursor-pointer"
+                  >
+                    {IMAGE_PRESETS.map((img, i) => (
+                      <option key={i} value={img.url}>{img.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Metas / Notas Estratégicas</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Feed Instagram Orgânico e Anúncios."
+                    value={postDescription}
+                    onChange={(e) => setPostDescription(e.target.value)}
+                    className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">
+                  Link do Google Drive (Opcional - Pasta para Vídeos ou Ativos de Alta Definição)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  value={postDriveLink}
+                  onChange={(e) => setPostDriveLink(e.target.value)}
+                  className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-[#E5D1B0] focus:border-[#C5A035] outline-none transition-all font-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-gradient-to-r from-[#C5A059] to-[#8F7035] hover:from-[#E5D1B0] hover:to-[#C5A059] text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2 shadow-lg"
+              >
+                <UploadCloud className="w-3.5 h-3.5" /> Enviar Post & Legenda para Aprovação
+              </button>
+            </form>
           </div>
         </motion.div>
       )}

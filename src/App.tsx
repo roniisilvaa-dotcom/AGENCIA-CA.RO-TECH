@@ -31,6 +31,7 @@ import ResultsTab from "./components/ResultsTab";
 import PendingsTab from "./components/PendingsTab";
 import LoginGate from "./components/LoginGate";
 import ClientDashboard from "./components/ClientDashboard";
+import ClientsTab from "./components/ClientsTab";
 
 // Lucide icons
 import { 
@@ -44,7 +45,8 @@ import {
   Menu,
   X,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Building2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -195,6 +197,7 @@ export default function App() {
 
   const sidebarTabs = [
     { id: "dashboard", label: "Painel Geral", icon: LayoutDashboard },
+    { id: "clientes", label: "Gestão de Clientes", icon: Building2 },
     { id: "reunioes", label: "Histórico de Reuniões", icon: Users },
     { id: "projetos", label: "Mesa Kanban & Status", icon: Layers },
     { id: "portal-ai", label: "Portal I.A Oracle", icon: Sparkles },
@@ -228,6 +231,15 @@ export default function App() {
             onAddClientMessage={handleAddClientMessage}
           />
         );
+      case "clientes":
+        return (
+          <ClientsTab
+            clients={clients}
+            onAddClient={handleAddClient}
+            onDeleteClient={handleDeleteClient}
+            onUpdateClient={handleUpdateClient}
+          />
+        );
       case "reunioes":
         return <MeetingsTab meetings={meetings} onAddMeeting={handleAddMeeting} currentUser={currentUser} />;
       case "projetos":
@@ -253,6 +265,7 @@ export default function App() {
             clients={clients}
             onAddClient={handleAddClient}
             onDeleteClient={handleDeleteClient}
+            onUpdateClient={handleUpdateClient}
             onAddApproval={handleAddApproval}
             clientMessages={clientMessages}
             onAddClientMessage={handleAddClientMessage}
