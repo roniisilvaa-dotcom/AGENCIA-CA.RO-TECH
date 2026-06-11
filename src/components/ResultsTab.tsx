@@ -230,12 +230,12 @@ export default function ResultsTab({ metrics, projects, clients = [], publicatio
       const data: WeeklyReportPayload = {
         clientName: activeClientObj.name,
         period: "Semana de 01 a 07 de Junho de 2026",
-        executiveSummary: `Os resultados semanais da marca ${activeClientObj.name} evidenciam uma consolidação notável de autoridade nos canais institucionais. A integração contínua de design, desenvolvimento e transparência síncrona do CA.RO ATELIER impulsiona o volume e a taxa de conversão qualificada no mercado premium.`,
+        executiveSummary: `Os resultados semanais da marca ${activeClientObj.name} evidenciam uma consolidação notável de autoridade nos canais institucionais. A integração contínua de design, desenvolvimento e transparência síncrona do CA.RO TECH impulsiona o volume e a taxa de conversão qualificada no mercado premium.`,
         metricsAnalysis: {
           growthPercentage: "+16.8%",
           keyHighlight: "Engajamento qualitativo e retenção de leads de altíssimo valor",
           insights: [
-            "O alcance expandido reflete aderência de público s sintonizado com Alphaville.",
+            "O alcance expandido reflete aderência de público sintonizado com a estratégia.",
             "As mídias de alta fidelidade visual performam acima do desvio histórico do setor.",
             "Visualizações recorrentes geram oportunidades qualificadas de alto impacto síncrono."
           ]
@@ -248,13 +248,13 @@ export default function ResultsTab({ metrics, projects, clients = [], publicatio
         weeklyDeliverables: clientPublications.length > 0 
           ? clientPublications.map(p => ({ title: p.title, status: "Entregue", impact: "Forte impacto em posicionamento de mídia." }))
           : [
-              { title: "Review Conceitual de Banners Editoriais", status: "Entregue", impact: "Branding de alta costura alinhando estética regional." },
+              { title: "Review Conceitual de Banners Editoriais", status: "Entregue", impact: "Branding estratégico alinhando estética regional." },
               { title: "Piloto 3D de Precisão Mecânica", status: "Entregue", impact: "Aproximação de público e engenharia fina." }
             ],
         strategicNextSteps: [
-          { action: "Sintonizar a iluminação e acabamento dos próximos renders conceituais.", owner: "Julio M. (CA.RO ATELIER)", priority: "Alta" },
+          { action: "Sintonizar a iluminação e acabamento dos próximos renders conceituais.", owner: "Julio M. (CA.RO TECH)", priority: "Alta" },
           { action: "Aprovar as pautas e novos copys dos posts pendentes para Instagram.", owner: "Equipe de Criação", priority: "Alta" },
-          { action: "Consolidar a esteira integrada de mídias de alto padrão.", owner: "Carol (CA.RO ATELIER)", priority: "Média" }
+          { action: "Consolidar a esteira integrada de mídias de alto padrão.", owner: "Carol (CA.RO TECH)", priority: "Média" }
         ],
         creativeInspiration: "A verdadeira sofisticação reside diletante na conciliação invisível entre a forma requintada de cada elemento e a honestidade técnica do produto."
       };
@@ -300,7 +300,7 @@ ${r.weeklyDeliverables.map(d => `- [${d.status}] ${d.title}: ${d.impact}`).join(
 V. PRÓXIMOS PASSOS ESTRATÉGICOS
 ${r.strategicNextSteps.map((s, i) => `${i + 1}. [Prioridade ${s.priority}] - ${s.action} (Resp: ${s.owner})`).join("\n")}
 
-VI. DIRETRIZ E INSPIRAÇÃO CRIATIVA (CAROL - CA.RO ATELIER)
+VI. DIRETRIZ E INSPIRAÇÃO CRIATIVA (CAROL - CA.RO TECH)
 "${r.creativeInspiration}"`;
 
     navigator.clipboard.writeText(reportText);
@@ -314,8 +314,7 @@ VI. DIRETRIZ E INSPIRAÇÃO CRIATIVA (CAROL - CA.RO ATELIER)
     { label: "Impressões de marca", value: adjustedMetrics.impressions.toLocaleString(), progress: 92, change: "+22.1%", color: "from-[#C5A059] to-yellow-600", sub: "Alta densidade visual" },
     { label: "Cliques em campanhas", value: adjustedMetrics.clicks.toLocaleString(), progress: 70, change: "+12.3%", color: "from-blue-500 to-sky-400", sub: "Alta conversão qualitativa" },
     { label: "Engajamento qualitativo", value: adjustedMetrics.engagement.toLocaleString(), progress: 62, change: "+8.4%", color: "from-emerald-500 to-teal-400", sub: "Assinaturas autênticas" },
-    { label: "Leads de altíssimo padrão", value: adjustedMetrics.leads.toLocaleString(), progress: 54, change: "+10.9%", color: "from-purple-500 to-indigo-400", sub: "Contatos qualificados" },
-    { label: "Oportunidades geradas", value: adjustedMetrics.opportunities.toLocaleString(), progress: 48, change: "+14.8%", color: "from-pink-500 to-rose-400", sub: "Validação em Alphaville" }
+    { label: "Oportunidades geradas", value: adjustedMetrics.opportunities.toLocaleString(), progress: 48, change: "+14.8%", color: "from-pink-500 to-rose-400", sub: "Validação de resultados" }
   ];
 
   return (

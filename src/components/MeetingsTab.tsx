@@ -85,7 +85,7 @@ export default function MeetingsTab({ meetings, onAddMeeting, currentUser }: Mee
         attendees: ["Carol (CA.RO)", "Julio (CA.RO)", "Time Mundi TKR"],
         agenda: "Notas de rascunho: " + rawText,
         decisions: [
-          "Definição do ensaio em alta velocidade de Alphaville",
+          "Definição do ensaio em alta velocidade em Barueri",
           "Lançamento do Portal de Transparência Operacional para a Mundi TKR"
         ],
         nextActions: [

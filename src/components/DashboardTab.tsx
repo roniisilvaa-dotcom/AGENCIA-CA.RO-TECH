@@ -19,7 +19,14 @@ import {
   Users,
   Trash2,
   Send,
-  MessageSquare
+  MessageSquare,
+  Globe,
+  Instagram,
+  Linkedin,
+  FileText,
+  Building2,
+  Shield,
+  Edit
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -36,6 +43,7 @@ interface DashboardTabProps {
   clients: Client[];
   onAddClient: (client: Client) => void;
   onDeleteClient: (clientId: string) => void;
+  onUpdateClient: (client: Client) => void;
   onAddApproval: (item: ApprovalItem) => void;
   clientMessages: ClientMessage[];
   onAddClientMessage: (msg: ClientMessage) => void;
@@ -50,6 +58,7 @@ export default function DashboardTab({
   clients,
   onAddClient,
   onDeleteClient,
+  onUpdateClient,
   onAddApproval,
   clientMessages,
   onAddClientMessage
@@ -68,7 +77,27 @@ export default function DashboardTab({
   const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientPassword, setNewClientPassword] = useState("");
   const [newClientTagline, setNewClientTagline] = useState("");
+  const [newClientCnpj, setNewClientCnpj] = useState("");
+  const [newClientLogoUrl, setNewClientLogoUrl] = useState("");
+  const [newClientWebsite, setNewClientWebsite] = useState("");
+  const [newClientInstagram, setNewClientInstagram] = useState("");
+  const [newClientLinkedin, setNewClientLinkedin] = useState("");
+  const [newClientAddress, setNewClientAddress] = useState("");
+  const [newClientStatus, setNewClientStatus] = useState<"Ativo" | "Inativo" | "Suspenso">("Ativo");
   const [clientRegSuccess, setClientRegSuccess] = useState<string | null>(null);
+
+  // Client editing state
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editClientName, setEditClientName] = useState("");
+  const [editClientPassword, setEditClientPassword] = useState("");
+  const [editClientTagline, setEditClientTagline] = useState("");
+  const [editClientCnpj, setEditClientCnpj] = useState("");
+  const [editClientLogoUrl, setEditClientLogoUrl] = useState("");
+  const [editClientWebsite, setEditClientWebsite] = useState("");
+  const [editClientInstagram, setEditClientInstagram] = useState("");
+  const [editClientLinkedin, setEditClientLinkedin] = useState("");
+  const [editClientAddress, setEditClientAddress] = useState("");
+  const [editClientStatus, setEditClientStatus] = useState<"Ativo" | "Inativo" | "Suspenso">("Ativo");
 
   // Post & Legenda upload state
   const [selectedPostClient, setSelectedPostClient] = useState("");
@@ -137,16 +166,16 @@ export default function DashboardTab({
   // Meet/Calendar events filter
   const getEventsForDay = (day: string) => {
     const defaultMeetings: Record<string, { time: string; title: string; category: string; host: string }[]> = {
-      "Segunda": [{ time: "09:00", title: "Brainstorming Criativo - Novos Conceitos", category: "Concepção", host: "Carol (CA.RO ATELIER)" }],
+      "Segunda": [{ time: "09:00", title: "Brainstorming Criativo - Novos Conceitos", category: "Concepção", host: "Agência CA.RO TECH" }],
       "Terça": [
-        { time: "10:30", title: "Review de Linhas & Renders Técnicos", category: "Alinhamento", host: "Julio M. (CA.RO ATELIER)" },
-        { time: "15:00", title: "Apresentação de Campanha e Posts de Mídia", category: "Aprovação", host: "Carol (CA.RO ATELIER)" }
+        { time: "10:30", title: "Review de Linhas & Renders Técnicos", category: "Alinhamento", host: "Agência CA.RO TECH" },
+        { time: "15:00", title: "Apresentação de Campanha e Posts de Mídia", category: "Aprovação", host: "Agência CA.RO TECH" }
       ],
       "Quarta": [{ time: "14:00", title: "Análise de Métricas do Lightroom Estético", category: "Performance", host: "Marketing Central" }],
-      "Quinta": [{ time: "10:30", title: "Alinhamento Estratégico de Marcas Ativas", category: "Comercial", host: "Julio M. (CA.RO ATELIER)" }],
+      "Quinta": [{ time: "10:30", title: "Alinhamento Estratégico de Marcas Ativas", category: "Comercial", host: "Agência CA.RO TECH" }],
       "Sexta": [
-        { time: "11:00", title: "Fechamento de Pautas Semanais", category: "Planejamento", host: "Lucas H. (CA.RO ATELIER)" },
-        { time: "16:00", title: "Entrega Geral & Transparência Real-Time", category: "Gestão", host: "Conselho CA.RO" }
+        { time: "11:00", title: "Fechamento de Pautas Semanais", category: "Planejamento", host: "Agência CA.RO TECH" },
+        { time: "16:00", title: "Entrega Geral & Transparência Real-Time", category: "Gestão", host: "Conselho CA.RO TECH" }
       ]
     };
 
@@ -183,7 +212,14 @@ export default function DashboardTab({
       password: newClientPassword.trim() || "caro2026",
       tagline: newClientTagline.trim() || "Nova Célula Executiva Cadastrada",
       welcomeMessage: "Sua mesa exclusiva de design técnico com o CA.RO ATELIER.",
-      reachMultiplier: Number((Math.random() * 0.5 + 1.0).toFixed(2)) // random multiplier between 1.0 and 1.5
+      reachMultiplier: Number((Math.random() * 0.5 + 1.0).toFixed(2)), // random multiplier between 1.0 and 1.5
+      cnpj: newClientCnpj.trim() || undefined,
+      logoUrl: newClientLogoUrl.trim() || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=200",
+      website: newClientWebsite.trim() || undefined,
+      instagram: newClientInstagram.trim() || undefined,
+      linkedin: newClientLinkedin.trim() || undefined,
+      address: newClientAddress.trim() || undefined,
+      status: newClientStatus
     };
 
     onAddClient(newClient);
@@ -194,10 +230,40 @@ export default function DashboardTab({
     setNewClientEmail("");
     setNewClientPassword("");
     setNewClientTagline("");
+    setNewClientCnpj("");
+    setNewClientLogoUrl("");
+    setNewClientWebsite("");
+    setNewClientInstagram("");
+    setNewClientLinkedin("");
+    setNewClientAddress("");
+    setNewClientStatus("Ativo");
 
     setTimeout(() => {
       setClientRegSuccess(null);
     }, 7000);
+  };
+
+  const handleEditClientSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+
+    const updatedClient: Client = {
+      ...editingClient,
+      name: editClientName.trim(),
+      password: editClientPassword.trim() || editingClient.password,
+      tagline: editClientTagline.trim(),
+      cnpj: editClientCnpj.trim() || undefined,
+      logoUrl: editClientLogoUrl.trim() || undefined,
+      website: editClientWebsite.trim() || undefined,
+      instagram: editClientInstagram.trim() || undefined,
+      linkedin: editClientLinkedin.trim() || undefined,
+      address: editClientAddress.trim() || undefined,
+      status: editClientStatus
+    };
+
+    onUpdateClient(updatedClient);
+    setEditingClient(null);
+    alert("Dados do cliente atualizados com sucesso!");
   };
 
   // Handle Post & Legenda submit for Client approval
@@ -254,7 +320,7 @@ export default function DashboardTab({
     e.preventDefault();
     if (!directMsgText.trim()) return;
 
-    const senderName = currentUser?.name || "Carol (CA.RO ATELIER)";
+    const senderName = currentUser?.name || "Agência CA.RO TECH";
     const senderRole = currentUser?.role || "agency";
 
     const newMsg: ClientMessage = {
@@ -324,6 +390,165 @@ export default function DashboardTab({
             </div>
           )}
         </div>
+      </motion.div>
+
+      {/* ESPAÇO DO CLIENTE - INSTITUCIONAL & PERSONALIZAÇÃO */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="luxury-card p-6 rounded-2xl border border-white/10 bg-[#0C0C0C]/80 relative overflow-hidden"
+      >
+        <div className="absolute inset-0 geo-grid opacity-10 pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-xl text-[#C5A059]">
+              <Building2 className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg text-white">Espaço do Cliente - Perfil & Personalização</h3>
+              <p className="text-[10px] text-zinc-400">Dados institucionais, logomarcas, CNPJ e presença social integrados à célula CA.RO TECH</p>
+            </div>
+          </div>
+          <div className="text-[9px] font-tech text-[#C5A059] tracking-widest bg-[#C5A059]/10 border border-[#C5A059]/20 px-2.5 py-0.5 rounded uppercase font-semibold">
+            Configuração Premium
+          </div>
+        </div>
+
+        {/* If a client is selected, show their full workspace branding */}
+        {matchedClientObj ? (
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            {/* Logo and Tagline */}
+            <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left space-y-3 border-b md:border-b-0 md:border-r border-white/5 pb-4 md:pb-0 md:pr-6">
+              <div className="w-24 h-24 rounded-xl overflow-hidden bg-zinc-900 border border-white/10 flex items-center justify-center p-2 relative group">
+                {matchedClientObj.logoUrl ? (
+                  <img src={matchedClientObj.logoUrl} alt={matchedClientObj.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                ) : (
+                  <Building2 className="w-12 h-12 text-zinc-650" />
+                )}
+              </div>
+              <div>
+                <h4 className="font-serif text-xl text-white font-medium">{matchedClientObj.name}</h4>
+                <p className="text-[11px] text-[#C5A059] italic mt-0.5">"{matchedClientObj.tagline}"</p>
+              </div>
+            </div>
+
+            {/* CNPJ, Status, Address */}
+            <div className="md:col-span-5 space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-zinc-900/60 p-2.5 rounded-xl border border-white/5 space-y-1">
+                  <span className="text-[9px] uppercase tracking-widest font-tech text-zinc-500 font-semibold block">CNPJ Institucional</span>
+                  <div className="flex items-center gap-1.5 font-mono text-zinc-300 font-bold">
+                    <FileText className="w-3.5 h-3.5 text-[#C5A059]" />
+                    <span>{matchedClientObj.cnpj || "Não Informado"}</span>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900/60 p-2.5 rounded-xl border border-white/5 space-y-1">
+                  <span className="text-[9px] uppercase tracking-widest font-tech text-zinc-500 font-semibold block">Status Operacional</span>
+                  <div className="flex items-center gap-1.5 font-tech text-zinc-300">
+                    <Shield className={`w-3.5 h-3.5 ${matchedClientObj.status === "Ativo" ? "text-emerald-400" : matchedClientObj.status === "Suspenso" ? "text-rose-400" : "text-amber-400"}`} />
+                    <span className="font-bold">{matchedClientObj.status || "Ativo"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900/60 p-2.5 rounded-xl border border-white/5 space-y-1">
+                <span className="text-[9px] uppercase tracking-widest font-tech text-zinc-500 font-semibold block">Sede / Endereço</span>
+                <div className="flex items-start gap-1.5 text-zinc-300 leading-normal">
+                  <MapPin className="w-3.5 h-3.5 text-[#C5A059] shrink-0 mt-0.5" />
+                  <span>{matchedClientObj.address || "Endereço comercial não preenchido"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Website & Socials */}
+            <div className="md:col-span-3 flex flex-col justify-center space-y-2.5">
+              <span className="text-[9px] uppercase tracking-widest font-tech text-zinc-500 font-semibold text-center md:text-left block">Presença Digital</span>
+              <div className="grid grid-cols-1 gap-2">
+                {matchedClientObj.website ? (
+                  <a href={matchedClientObj.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2 bg-zinc-900 hover:bg-[#C5A059]/10 border border-white/5 hover:border-[#C5A059]/30 rounded-xl transition-all text-[11px] text-zinc-300 hover:text-white cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-[#C5A059]" />
+                      <span>Website Oficial</span>
+                    </div>
+                    <ArrowRight className="w-3 h-3 text-zinc-500" />
+                  </a>
+                ) : (
+                  <div className="p-2 bg-zinc-900/40 border border-white/5 opacity-50 rounded-xl text-[10px] text-zinc-500 text-center">
+                    Website não cadastrado
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  {matchedClientObj.instagram ? (
+                    <a href={`https://instagram.com/${matchedClientObj.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-zinc-900 hover:bg-rose-500/10 border border-white/5 hover:border-rose-500/30 rounded-xl transition-all text-[10px] text-zinc-300 hover:text-white cursor-pointer">
+                      <Instagram className="w-3.5 h-3.5 text-[#C5A059]" />
+                      <span>Instagram</span>
+                    </a>
+                  ) : (
+                    <div className="flex-1 py-2 bg-zinc-900/40 border border-white/5 opacity-50 rounded-xl text-[10px] text-zinc-500 text-center">
+                      Sem Instagram
+                    </div>
+                  )}
+
+                  {matchedClientObj.linkedin ? (
+                    <a href={`https://linkedin.com/company/${matchedClientObj.linkedin}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-zinc-900 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/30 rounded-xl transition-all text-[10px] text-zinc-300 hover:text-white cursor-pointer">
+                      <Linkedin className="w-3.5 h-3.5 text-[#C5A059]" />
+                      <span>LinkedIn</span>
+                    </a>
+                  ) : (
+                    <div className="flex-1 py-2 bg-zinc-900/40 border border-white/5 opacity-50 rounded-xl text-[10px] text-zinc-500 text-center">
+                      Sem LinkedIn
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* If showing all (Admin overall view), render a grid of all client brands */
+          <div className="relative z-10 space-y-4">
+            <span className="block text-[10px] text-zinc-500 uppercase tracking-widest font-tech font-bold">Resumo das Contas Ativas ({clients.length})</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {clients.map(cli => (
+                <div key={cli.id} className="p-4 bg-zinc-900/40 border border-white/5 hover:border-[#C5A059]/20 rounded-2xl flex flex-col justify-between space-y-3.5 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg bg-zinc-950 border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
+                      {cli.logoUrl ? (
+                        <img src={cli.logoUrl} alt={cli.name} className="w-full h-full object-contain" />
+                      ) : (
+                        <Building2 className="w-6 h-6 text-zinc-650" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-serif text-sm text-white truncate font-medium">{cli.name}</h4>
+                      <span className="text-[9px] text-[#C5A059] block truncate">CNPJ: {cli.cnpj || "Não Informado"}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-[11px] text-zinc-400 space-y-1 pt-1.5 border-t border-white/5">
+                    <div className="flex justify-between">
+                      <span>Status:</span>
+                      <strong className={cli.status === "Ativo" ? "text-emerald-400 font-tech" : "text-amber-400 font-tech"}>{cli.status || "Ativo"}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Login:</span>
+                      <span className="font-mono text-[9px] text-zinc-300">{cli.email}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedClientFilter(cli.email)}
+                    className="w-full py-1.5 bg-[#C5A059]/10 hover:bg-[#C5A059] border border-[#C5A059]/20 hover:text-zinc-950 text-xs font-semibold text-[#E5D1B0] rounded-xl transition-all cursor-pointer font-tech uppercase tracking-wide text-center"
+                  >
+                    Ver Espaço Completo
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* KPI Grid */}
@@ -611,7 +836,7 @@ export default function DashboardTab({
               <div className="space-y-2 text-[11px] text-zinc-350">
                 <div className="flex justify-between items-center bg-zinc-950/40 p-2 rounded-lg border border-white/5">
                   <span className="text-zinc-400">Ambiente de Operação:</span>
-                  <strong className="text-white font-medium font-tech uppercase">Barueri - SP</strong>
+                  <strong className="text-white font-medium font-tech uppercase">ALLPHAVILLE - BARUERI</strong>
                 </div>
                 <div className="flex justify-between items-center bg-zinc-950/40 p-2 rounded-lg border border-white/5">
                   <span className="text-zinc-400">Total Mensagens do Canal:</span>
@@ -649,8 +874,8 @@ export default function DashboardTab({
               <Users className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="font-serif text-xl text-white tracking-tight leading-none">Console Supremo de Administração (Carol / ADM)</h3>
-              <p className="text-[11px] text-zinc-400 mt-1">Crie ambientes isolados para novos clientes e submeta posts com legendas ricas para aprovação imediata.</p>
+              <h3 className="font-serif text-xl text-white tracking-tight leading-none">Console de Administração do Partner</h3>
+              <p className="text-[11px] text-zinc-400 mt-1">Crie ambientes isolados com o Espaço do Cliente completo e submeta posts com legendas ricas para aprovação imediata.</p>
             </div>
           </div>
 
@@ -658,76 +883,303 @@ export default function DashboardTab({
             
             {/* COLUMN 1: Register New Client */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="p-1 bg-[#C5A059]/15 rounded text-[#C5A059]">
-                  <UserPlus className="w-4 h-4" />
-                </span>
-                <span className="text-xs font-bold text-[#E5D1B0] uppercase font-tech tracking-wider">1. Cadastrar Novo Cliente</span>
-              </div>
+              {editingClient ? (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-[#C5A059] uppercase font-tech tracking-wider">Editar Cliente: {editingClient.name}</span>
+                    <button 
+                      type="button"
+                      onClick={() => setEditingClient(null)}
+                      className="text-[10px] text-zinc-400 hover:text-white uppercase font-tech font-bold cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                  <form onSubmit={handleEditClientSubmit} className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
+                        <input
+                          type="text"
+                          required
+                          value={editClientName}
+                          onChange={(e) => setEditClientName(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">CNPJ da Empresa</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: 98.765.432/0001-11"
+                          value={editClientCnpj}
+                          onChange={(e) => setEditClientCnpj(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
 
-              {clientRegSuccess && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-start gap-2">
-                  <Check className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p className="font-mono">{clientRegSuccess}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-500 uppercase tracking-widest font-tech mb-1">E-mail de Login (Não editável)</label>
+                        <input
+                          type="email"
+                          disabled
+                          value={editingClient.email}
+                          className="w-full text-xs bg-zinc-950 border border-white/5 opacity-50 rounded-lg p-2.5 text-zinc-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
+                        <input
+                          type="text"
+                          value={editClientPassword}
+                          onChange={(e) => setEditClientPassword(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan de Luxo</label>
+                        <input
+                          type="text"
+                          value={editClientTagline}
+                          onChange={(e) => setEditClientTagline(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">URL da Logomarca (Imagem)</label>
+                        <input
+                          type="text"
+                          value={editClientLogoUrl}
+                          onChange={(e) => setEditClientLogoUrl(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
+                        <input
+                          type="url"
+                          value={editClientWebsite}
+                          onChange={(e) => setEditClientWebsite(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Status da Conta</label>
+                        <select
+                          value={editClientStatus}
+                          onChange={(e) => setEditClientStatus(e.target.value as "Ativo" | "Inativo" | "Suspenso")}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer"
+                        >
+                          <option value="Ativo">🟢 Ativo</option>
+                          <option value="Inativo">🟡 Inativo</option>
+                          <option value="Suspenso">🔴 Suspenso</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
+                        <input
+                          type="text"
+                          value={editClientInstagram}
+                          onChange={(e) => setEditClientInstagram(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">LinkedIn (Username)</label>
+                        <input
+                          type="text"
+                          value={editClientLinkedin}
+                          onChange={(e) => setEditClientLinkedin(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Completo</label>
+                      <input
+                        type="text"
+                        value={editClientAddress}
+                        onChange={(e) => setEditClientAddress(e.target.value)}
+                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
+                    >
+                      <Edit className="w-3.5 h-3.5" /> Salvar Alterações
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="p-1 bg-[#C5A059]/15 rounded text-[#C5A059]">
+                      <UserPlus className="w-4 h-4" />
+                    </span>
+                    <span className="text-xs font-bold text-[#E5D1B0] uppercase font-tech tracking-wider">1. Cadastrar Novo Cliente (Espaço Completo)</span>
+                  </div>
+
+                  {clientRegSuccess && (
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-start gap-2">
+                      <Check className="w-4 h-4 shrink-0 mt-0.5" />
+                      <p className="font-mono">{clientRegSuccess}</p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleRegisterClientSubmit} className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Ex: Kagiva Sports"
+                          value={newClientName}
+                          onChange={(e) => setNewClientName(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">CNPJ da Empresa</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: 98.765.432/0001-11"
+                          value={newClientCnpj}
+                          onChange={(e) => setNewClientCnpj(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Login E-mail</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="Ex: dadoskagiva@gmail.com"
+                          value={newClientEmail}
+                          onChange={(e) => setNewClientEmail(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
+                        <input
+                          type="text"
+                          placeholder="Default: dadoskagiva"
+                          value={newClientPassword}
+                          onChange={(e) => setNewClientPassword(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan de Luxo</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Sensibilidade & Design Esportivo"
+                          value={newClientTagline}
+                          onChange={(e) => setNewClientTagline(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">URL da Logomarca (Imagem)</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: https://images.unsplash.com/..."
+                          value={newClientLogoUrl}
+                          onChange={(e) => setNewClientLogoUrl(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
+                        <input
+                          type="url"
+                          placeholder="Ex: https://kagivasports.com.br"
+                          value={newClientWebsite}
+                          onChange={(e) => setNewClientWebsite(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Status da Conta</label>
+                        <select
+                          value={newClientStatus}
+                          onChange={(e) => setNewClientStatus(e.target.value as "Ativo" | "Inativo" | "Suspenso")}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer"
+                        >
+                          <option value="Ativo">🟢 Ativo</option>
+                          <option value="Inativo">🟡 Inativo</option>
+                          <option value="Suspenso">🔴 Suspenso</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: @kagiva.sports"
+                          value={newClientInstagram}
+                          onChange={(e) => setNewClientInstagram(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">LinkedIn (Username)</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: kagiva-sports"
+                          value={newClientLinkedin}
+                          onChange={(e) => setNewClientLinkedin(e.target.value)}
+                          className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Completo</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: Avenida do Esporte, 450 - Barueri, São Paulo"
+                        value={newClientAddress}
+                        onChange={(e) => setNewClientAddress(e.target.value)}
+                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" /> Efetuar Cadastro
+                    </button>
+                  </form>
                 </div>
               )}
-
-              <form onSubmit={handleRegisterClientSubmit} className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: Kagiva Sports"
-                      value={newClientName}
-                      onChange={(e) => setNewClientName(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Login E-mail</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="Ex: dadoskagiva@gmail.com"
-                      value={newClientEmail}
-                      onChange={(e) => setNewClientEmail(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
-                    <input
-                      type="text"
-                      placeholder="Default: dadoskagiva"
-                      value={newClientPassword}
-                      onChange={(e) => setNewClientPassword(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan de Luxo</label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Sensibilidade & Design Esportivo"
-                      value={newClientTagline}
-                      onChange={(e) => setNewClientTagline(e.target.value)}
-                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
-                >
-                  <UserPlus className="w-3.5 h-3.5" /> Efetuar Cadastro em Alphaville
-                </button>
-              </form>
 
               {/* List of current dynamic clients */}
               <div className="pt-4 border-t border-white/5 space-y-2">
@@ -742,7 +1194,27 @@ export default function DashboardTab({
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm(`Aviso supremo: Deseja realmente EXCLUIR e expurgar a conta de "${cli.name}" (${cli.email}) de Alphaville?`)) {
+                              setEditingClient(cli);
+                              setEditClientName(cli.name);
+                              setEditClientTagline(cli.tagline);
+                              setEditClientCnpj(cli.cnpj || "");
+                              setEditClientLogoUrl(cli.logoUrl || "");
+                              setEditClientWebsite(cli.website || "");
+                              setEditClientInstagram(cli.instagram || "");
+                              setEditClientLinkedin(cli.linkedin || "");
+                              setEditClientAddress(cli.address || "");
+                              setEditClientStatus(cli.status || "Ativo");
+                              setEditClientPassword(cli.password || "");
+                            }}
+                            className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-amber-500/10 transition-colors cursor-pointer"
+                            title="Editar Cliente"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Aviso supremo: Deseja realmente EXCLUIR e expurgar a conta de "${cli.name}" (${cli.email})?`)) {
                                 onDeleteClient(cli.id);
                               }
                             }}

@@ -186,7 +186,7 @@ export default function PendingsTab({ pendings, onAddPending, onResolvePending, 
           <div className="col-span-full py-16 text-center text-zinc-500 text-sm flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl bg-zinc-900/10">
             <ClipboardCheck className="w-12 h-12 text-[#C5A059] mb-2 opacity-50" />
             <p>Excelente! A Mundi TKR não possui pendências ou bloqueios operacionais no pipeline.</p>
-            <p className="text-[11px] font-light text-zinc-500 mt-1">Conexão 100% fluida da fábrica de Alphaville.</p>
+            <p className="text-[11px] font-light text-zinc-500 mt-1">Conexão 100% fluida da nossa equipe de Barueri.</p>
           </div>
         ) : (
           pendings.map((pend) => {

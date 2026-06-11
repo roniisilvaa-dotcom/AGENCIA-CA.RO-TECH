@@ -21,7 +21,6 @@ import {
   saveState
 } from "./data";
 
-// Tabs
 import DashboardTab from "./components/DashboardTab";
 import MeetingsTab from "./components/MeetingsTab";
 import ProjectsTab from "./components/ProjectsTab";
@@ -31,6 +30,7 @@ import PublicationsTab from "./components/PublicationsTab";
 import ResultsTab from "./components/ResultsTab";
 import PendingsTab from "./components/PendingsTab";
 import LoginGate from "./components/LoginGate";
+import ClientDashboard from "./components/ClientDashboard";
 
 // Lucide icons
 import { 
@@ -95,7 +95,7 @@ export default function App() {
       {
         id: "msg-init-1",
         clientEmail: "mundi@tkr.com",
-        senderName: "Carol (CA.RO ATELIER)",
+        senderName: "Agência CA.RO TECH",
         senderRole: "agency",
         text: "Bem-vindos ao nosso espaço unificado de Barueri. Deixem suas considerações ou avisos urgentes aqui para nossa equipe de criação síncrona.",
         timestamp: "07/06/2026, 14:00"
@@ -103,7 +103,7 @@ export default function App() {
       {
         id: "msg-init-2",
         clientEmail: "dadoskagiva@gmail.com",
-        senderName: "Carol (CA.RO ATELIER)",
+        senderName: "Agência CA.RO TECH",
         senderRole: "agency",
         text: "Olá equipe Kagiva Sports! Fuso de São Paulo sintonizado com Alphaville. Aguardamos sua revisão dos novos posts de alto impacto esportivo.",
         timestamp: "07/06/2026, 14:15"
@@ -169,6 +169,12 @@ export default function App() {
     saveState("caro_clients", updated);
   };
 
+  const handleUpdateClient = (updatedCli: Client) => {
+    const updated = clients.map(c => c.id === updatedCli.id ? updatedCli : c);
+    setClients(updated);
+    saveState("caro_clients", updated);
+  };
+
   const handleAddClientMessage = (newMsg: ClientMessage) => {
     const updated = [...clientMessages, newMsg];
     setClientMessages(updated);
@@ -216,6 +222,7 @@ export default function App() {
             clients={clients}
             onAddClient={handleAddClient}
             onDeleteClient={handleDeleteClient}
+            onUpdateClient={handleUpdateClient}
             onAddApproval={handleAddApproval}
             clientMessages={clientMessages}
             onAddClientMessage={handleAddClientMessage}
@@ -293,20 +300,6 @@ export default function App() {
                   {currentUser.role === "agency" ? "Acesso Agência" : "Acesso Cliente / Auditor"}
                 </span>
               </div>
-              <div className="h-4 w-[1px] bg-white/10" />
-              <button
-                onClick={() => {
-                  if (currentUser.role === "agency") {
-                    handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
-                  } else {
-                    handleLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
-                  }
-                }}
-                className="text-[9px] font-tech text-[#C5A059] hover:text-white bg-zinc-950 px-2 py-1 rounded border border-[#C5A059]/20 hover:border-[#C5A059]/50 transition-all uppercase cursor-pointer"
-                title="Troque de visão instantaneamente para testar o portal como agência ou cliente!"
-              >
-                Alternar Visão
-              </button>
               <button
                 onClick={handleLogout}
                 className="text-[9px] font-tech text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-2 py-1 rounded transition-all uppercase cursor-pointer font-bold"
@@ -319,12 +312,14 @@ export default function App() {
           </div>
 
           {/* Mobile menu trigger */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-            className="md:hidden p-2 text-zinc-300 hover:text-[#C5A880] transition-colors cursor-pointer"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {currentUser.role === "agency" && (
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              className="md:hidden p-2 text-zinc-300 hover:text-[#C5A880] transition-colors cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          )}
         </div>
       </header>
 
@@ -332,74 +327,12 @@ export default function App() {
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row gap-6 relative z-10 min-h-0">
         
         {/* Navigation Sidebar (Desktop) */}
-        <aside className="hidden md:block w-64 shrink-0 space-y-4">
-          <div className="luxury-card p-4 rounded-xl space-y-1.5 border border-white/[0.03]">
-            <div className="text-[10px] text-zinc-500 uppercase font-tech tracking-widest px-3 mb-2.5">Portal de Ações</div>
-            
-            <nav className="space-y-1">
-              {sidebarTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-medium tracking-wide font-tech transition-all cursor-pointer ${
-                      isActive 
-                        ? "bg-[#C5A059] text-zinc-950 font-bold scale-[1.01]" 
-                        : "text-zinc-400 hover:text-[#E5D1B0] hover:bg-white/[0.02]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="w-4.5 h-4.5 shrink-0" />
-                      <span>{tab.label}</span>
-                    </div>
-
-                    {tab.badge && tab.badge > 0 ? (
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                        isActive ? "bg-zinc-900 text-white" : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                      }`}>
-                        {tab.badge}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Quick Info Box */}
-          <div className="luxury-card p-4 rounded-xl space-y-2 border border-white/[0.02]">
-            <span className="text-[10px] text-zinc-400 font-tech uppercase tracking-widest border-b border-white/5 pb-1 block font-bold">Resumo Geral</span>
-            <div className="space-y-1.5 pt-1.5 text-[11px] font-light text-zinc-300">
-              <div className="flex justify-between">
-                <span>Atividades Ativas:</span>
-                <strong className="text-white font-tech">{projects.length}</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Última Ata de Reunião:</span>
-                <strong className="text-white font-tech">{meetings[0]?.date || "N/A"}</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Peças Pendentes TKR:</span>
-                <strong className="text-amber-400 font-tech">{approvals.filter(a => a.status === "Pendente").length}</strong>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Mobile Navigation Drawer */}
-        {/* Mobile Navigation Drawer */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden w-full bg-zinc-950 border border-white/10 rounded-xl p-4 space-y-2 shrink-0 select-none overflow-hidden"
-            >
-              <div className="text-[10px] text-zinc-500 uppercase font-tech tracking-wider px-2 mb-1.5">Navegação Móvel</div>
-              <div className="grid grid-cols-2 gap-2">
+        {currentUser.role === "agency" && (
+          <aside className="hidden md:block w-64 shrink-0 space-y-4">
+            <div className="luxury-card p-4 rounded-xl space-y-1.5 border border-white/[0.03]">
+              <div className="text-[10px] text-zinc-500 uppercase font-tech tracking-widest px-3 mb-2.5">Portal de Ações</div>
+              
+              <nav className="space-y-1">
                 {sidebarTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -407,73 +340,141 @@ export default function App() {
                     <button
                       key={tab.id}
                       onClick={() => handleTabChange(tab.id)}
-                      className={`flex items-center gap-2 p-3.5 rounded-xl text-xs font-semibold font-tech tracking-wider transition-all cursor-pointer border ${
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-medium tracking-wide font-tech transition-all cursor-pointer ${
                         isActive 
-                          ? "bg-[#C5A059] text-zinc-950 border-[#C5A059]" 
-                          : "bg-zinc-900/60 border-white/10 text-zinc-300 hover:text-white"
+                          ? "bg-[#C5A059] text-zinc-950 font-bold scale-[1.01]" 
+                          : "text-zinc-400 hover:text-[#E5D1B0] hover:bg-white/[0.02]"
                       }`}
                     >
-                      <Icon className="w-4 h-4 shrink-0 text-current" />
-                      <span className="truncate">{tab.label}</span>
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="w-4.5 h-4.5 shrink-0" />
+                        <span>{tab.label}</span>
+                      </div>
+
                       {tab.badge && tab.badge > 0 ? (
-                        <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-auto">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          isActive ? "bg-zinc-900 text-white" : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        }`}>
                           {tab.badge}
                         </span>
                       ) : null}
                     </button>
                   );
                 })}
-              </div>
+              </nav>
+            </div>
 
-              {/* Mobile session info & toggle */}
-              <div className="border-t border-white/5 pt-3.5 mt-2.5 flex flex-col gap-2 bg-[#111]/40 p-3 rounded-xl">
-                <div className="flex items-center justify-between px-1 text-[10px] text-zinc-400 font-tech">
-                  <span>Conectado como: <strong className="text-white font-medium">{currentUser.name}</strong></span>
-                  <span className="text-[#C5A059] uppercase font-bold tracking-wider">{currentUser.role === "agency" ? "Agência" : "Cliente"}</span>
+            {/* Quick Info Box */}
+            <div className="luxury-card p-4 rounded-xl space-y-2 border border-white/[0.02]">
+              <span className="text-[10px] text-zinc-400 font-tech uppercase tracking-widest border-b border-white/5 pb-1 block font-bold">Resumo Geral</span>
+              <div className="space-y-1.5 pt-1.5 text-[11px] font-light text-zinc-300">
+                <div className="flex justify-between">
+                  <span>Atividades Ativas:</span>
+                  <strong className="text-white font-tech">{projects.length}</strong>
                 </div>
-                <div className="flex gap-2 text-[10px] font-tech uppercase tracking-wider">
-                  <button
-                    onClick={() => {
-                      if (currentUser.role === "agency") {
-                        handleLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
-                      } else {
-                        handleLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
-                      }
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2 text-center bg-zinc-900 border border-white/10 rounded-lg text-zinc-300 font-semibold cursor-pointer active:scale-95 transition-all"
-                  >
-                    Alternar Papel
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2 text-center bg-rose-950/20 text-rose-400 border border-rose-900/30 rounded-lg font-bold cursor-pointer active:scale-95 transition-all"
-                  >
-                    Sair
-                  </button>
+                <div className="flex justify-between">
+                  <span>Última Ata de Reunião:</span>
+                  <strong className="text-white font-tech">{meetings[0]?.date || "N/A"}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Peças Pendentes TKR:</span>
+                  <strong className="text-amber-400 font-tech">{approvals.filter(a => a.status === "Pendente").length}</strong>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </aside>
+        )}
+
+        {/* Mobile Navigation Drawer */}
+        {currentUser.role === "agency" && (
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="md:hidden w-full bg-zinc-950 border border-white/10 rounded-xl p-4 space-y-2 shrink-0 select-none overflow-hidden"
+              >
+                <div className="text-[10px] text-zinc-500 uppercase font-tech tracking-wider px-2 mb-1.5">Navegação Móvel</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {sidebarTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`flex items-center gap-2 p-3.5 rounded-xl text-xs font-semibold font-tech tracking-wider transition-all cursor-pointer border ${
+                          isActive 
+                            ? "bg-[#C5A059] text-zinc-950 border-[#C5A059]" 
+                            : "bg-zinc-900/60 border-white/10 text-zinc-300 hover:text-white"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 shrink-0 text-current" />
+                        <span className="truncate">{tab.label}</span>
+                        {tab.badge && tab.badge > 0 ? (
+                          <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-auto">
+                            {tab.badge}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Mobile session info & toggle */}
+                <div className="border-t border-white/5 pt-3.5 mt-2.5 flex flex-col gap-2 bg-[#111]/40 p-3 rounded-xl">
+                  <div className="flex items-center justify-between px-1 text-[10px] text-zinc-400 font-tech">
+                    <span>Conectado como: <strong className="text-white font-medium">{currentUser.name}</strong></span>
+                    <span className="text-[#C5A059] uppercase font-bold tracking-wider">{currentUser.role === "agency" ? "Agência" : "Cliente"}</span>
+                  </div>
+                  <div className="flex text-[10px] font-tech uppercase tracking-wider">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full py-2 text-center bg-rose-950/20 text-rose-400 border border-rose-900/30 rounded-lg font-bold cursor-pointer active:scale-95 transition-all"
+                    >
+                      Sair
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* Main Workspace Frame container */}
         <main className="flex-1 overflow-y-auto pr-1 min-w-0" style={{ contentVisibility: "auto" }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.35 }}
-              className="w-full h-full pb-8"
-            >
-              {renderActiveTabContent()}
-            </motion.div>
-          </AnimatePresence>
+          {currentUser.role === "client" ? (
+            <ClientDashboard
+              currentUser={currentUser}
+              clients={clients}
+              projects={projects}
+              meetings={meetings}
+              approvals={approvals}
+              publications={publications}
+              pendings={pendings}
+              clientMessages={clientMessages}
+              onAddClientMessage={handleAddClientMessage}
+              onUpdateApproval={handleUpdateApproval}
+              onAddMeeting={handleAddMeeting}
+            />
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.35 }}
+                className="w-full h-full pb-8"
+              >
+                {renderActiveTabContent()}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </main>
 
       </div>

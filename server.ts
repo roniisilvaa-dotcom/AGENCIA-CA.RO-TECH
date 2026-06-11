@@ -189,7 +189,7 @@ Retorne exclusivamente o JSON, sem markdown exterior.`;
           { acao: "Finalização das artes institucionais", responsavel: "Julio M. (CA.RO)", prazo: "2 dias" },
           { acao: "Fornecer retornos sobre o design de embalagem", responsavel: "Time Mundi TKR", prazo: "Próxima terça" }
         ],
-        participantes: ["Carol (CA.RO)", "Julio (CA.RO)", "Diretoria Mundi TKR"]
+        participantes: ["Diretoria (CA.RO)", "Julio (CA.RO)", "Diretoria Mundi TKR"]
       }
     });
   }
@@ -232,7 +232,7 @@ app.post("/api/client-ai-chat", async (req, res) => {
     const ai = getAi();
     
     // Inject current project context into system dynamic instructions
-    const systemInstruction = `Você é o CA.RO Tech AI Oracle, assistente virtual analítico da boutique de alta costura digital e tecnologia CA.RO TECH (Alphaville / Munique / caroimage.com).
+    const systemInstruction = `Você é a CA.RO TECH IA, assistente virtual analítica da boutique de alta costura digital e tecnologia CA.RO TECH (Alphaville / Munique / caroimage.com).
 Você é sofisticado, prestativo, preciso e elegante. Você fala português brasileiro de alta estirpe técnica e estética.
 Você está atendendo o cliente específico: [${clientName}].
 
@@ -308,7 +308,7 @@ Responda dúvidas sobre esses projetos, dê insights baseados nesses números op
     } else if (msgLower.includes("metrica") || msgLower.includes("resultado") || msgLower.includes("engajamento") || msgLower.includes("lead") || msgLower.includes("alcance")) {
       fallbackText = `### Relatório de Performance e Impacto Tecnológico\n\nOs resultados mais recentes do ecossistema conectado de **${clientName}** indicam excelente conversão:\n\n- **Contatos Qualificados (Leads)**: Alta densidade de conversão no público de alta renda.\n- **Engajamento**: Ótima taxa média, impulsionada pelas postagens estéticas autorais de alta costura digital.\n- **Taxa de Oportunidades**: Excelente aproveitamento comercial.\n\n*Recomendamos manter o investimento na estética do Lightroom nobre para os próximos teasers para potencializar a sofisticação da marca.*`;
     } else if (msgLower.includes("ajuda") || msgLower.includes("como funciona") || msgLower.includes("quem é você") || msgLower.includes("ola")) {
-      fallbackText = `Olá! Sou o **CA.RO Tech AI Oracle**, seu assessor estratégico exclusivo no atelier. \n\nPosso ajudar você a:\n\n1. **Acompanhar os seus Projetos ativos** (Diga: *"Quais projetos estão em andamento?"*)\n2. **Consultar suas Métricas de Performance** (Diga: *"Como estão nossos resultados?"*)\n3. **Sanar Dúvidas sobre o fluxo de aprovação de peças** (Diga: *"Qual o status das peças em revisão?"*)\n\n*Estou pronto. O que deseja consultar hoje?*`;
+      fallbackText = `Olá! Sou a **CA.RO TECH IA**, sua assessora estratégica exclusiva no atelier. \n\nPosso ajudar você a:\n\n1. **Acompanhar os seus Projetos ativos** (Diga: *"Quais projetos estão em andamento?"*)\n2. **Consultar suas Métricas de Performance** (Diga: *"Como estão nossos resultados?"*)\n3. **Sanar Dúvidas sobre o fluxo de aprovação de peças** (Diga: *"Qual o status das peças em revisão?"*)\n\n*Estou pronto. O que deseja consultar hoje?*`;
     } else {
       fallbackText = `### Atendimento Estratégico CA.RO TECH\n\nEntendi sua solicitação sobre o ecossistema de **${clientName}**. \n\nNossa célula criativa de Alphaville está integrada com nossos servidores europeus para garantir que todas as entregas estejam no padrão luxuoso de **caroimage.com**.\n\n**Pontos Importantes de Discussão:**\n- Todos os projetos estão progredindo no pipeline em tempo ideal.\n- O feedback e as notas das atas são documentados em tempo real no seu painel principal.\n\nSe precisar de detalhes específicos sobre artes pendentes ou queira agendar uma conferência de alinhamento inteligente, me avise!`;
     }
@@ -483,7 +483,7 @@ app.post("/api/generate-weekly-report", async (req, res) => {
       strategicNextSteps: [
         {
           action: "Ajustar veiculação focando no público formador de opinião privado de Alphaville.",
-          owner: "Carol (CA.RO ATELIER)",
+          owner: "Diretoria (CA.RO ATELIER)",
           priority: "Alta"
         },
         {
@@ -511,7 +511,7 @@ app.post("/api/generate-project-briefing", async (req, res) => {
     1. "refinedTitle": Um título requintado para o projeto (ex: "Editorial de Elegância Dinâmica TKR").
     2. "refinedGoal": Um parágrafo sofisticado detalhando os objetivos estéticos e de impacto de mercado.
     3. "suggestedPriority": Sugestão de prioridade ("Alta", "Média", "Baixa").
-    4. "owner": Um proprietário recomendado para liderar a concepção (pode sugerir "Carol (CA.RO ATELIER)" ou "Julio M. (CA.RO ATELIER)").
+    4. "owner": Um proprietário recomendado para liderar a concepção (pode sugerir "Diretoria (CA.RO ATELIER)" ou "Julio M. (CA.RO ATELIER)").
     5. "visualDirections": Uma lista com 3 diretrizes visuais ricas para design e estúdio (paleta cromática, iluminação alemã, contrastes e acabamento de luxo).
     
     Retorne estritamente um JSON que atenda a essa restrição contratual de esquema, sem marcações ou introduções.`;
@@ -546,7 +546,7 @@ app.post("/api/generate-project-briefing", async (req, res) => {
       refinedTitle: `Editorial de Prestígio ${req.body.clientName || "Mundi TKR"}`,
       refinedGoal: `Concepção e modelagem técnica de alta sensibilidade para a campanha ${req.body.rawConcept || "editorial de luxo"}, assegurando o alinhamento impecável com a direção artística do CA.RO ATELIER.`,
       suggestedPriority: "Alta",
-      owner: "Carol (CA.RO ATELIER)",
+      owner: "Diretoria (CA.RO ATELIER)",
       visualDirections: [
         "Paleta refinada com acabamento fosco e hot-stamping dourado ou prateado.",
         "Iluminação alemã contrastada realçando a sofisticação da engenharia de precisão.",
@@ -578,4 +578,9 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+

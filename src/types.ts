@@ -6,6 +6,13 @@ export interface Client {
   tagline: string;
   welcomeMessage?: string;
   reachMultiplier: number;
+  cnpj?: string;
+  logoUrl?: string;
+  website?: string;
+  instagram?: string;
+  linkedin?: string;
+  address?: string;
+  status?: "Ativo" | "Inativo" | "Suspenso";
 }
 
 export interface Project {

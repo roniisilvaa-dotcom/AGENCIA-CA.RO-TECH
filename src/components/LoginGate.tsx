@@ -51,7 +51,7 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     } 
     
     if ((cleanEmail === "agencia@carotech.com" || cleanEmail === "agencia@caroimage.com" || cleanEmail === "agencia@caroatelier.com") && cleanPassword === "caro2026") {
-      onLogin("agency", "Carol (CA.RO ATELIER)", "agencia@caroatelier.com");
+      onLogin("agency", "Agência CA.RO TECH", "agencia@carotech.com");
       return;
     }
 
@@ -106,14 +106,14 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-full text-[10px] text-[#E5D1B0] tracking-[0.2em] uppercase font-tech"
           >
-            <Compass className="w-3.5 h-3.5 animate-spin-slow text-[#C5A059]" /> CA.RO ATELIER
+            <Compass className="w-3.5 h-3.5 animate-spin-slow text-[#C5A059]" /> CA.RO TECH
           </motion.div>
           <div className="space-y-1">
             <h1 className="font-serif text-3xl md:text-5xl text-white tracking-[0.25em]">
-              CA.RO <span className="italic text-[#C5A059]">ATELIER</span>
+              CA.RO <span className="italic text-[#C5A059]">TECH</span>
             </h1>
             <p className="text-[10px] uppercase font-tech tracking-[0.25em] text-[#C5A059] font-medium">
-              Alta Costura Digital & Transparência Conectada — Alphaville
+              Tecnologia & Design Estratégico — Transparência Conectada
             </p>
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
           </div>
 
           <p className="text-xs text-zinc-400 font-light text-center mb-6 leading-relaxed">
-            Seja bem-vindo. Insira suas credenciais seguras para sincronizar atividades do pipeline tecnológico e células produtivas de Alphaville.
+            Seja bem-vindo. Insira suas credenciais seguras para sincronizar atividades do pipeline tecnológico e células produtivas de Barueri.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -182,64 +182,12 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
               Autenticar Credenciais <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick preset credentials buttons section */}
-          <div className="mt-8 border-t border-white/5 pt-6 space-y-4">
-            <span className="block text-[10px] text-zinc-500 uppercase tracking-widest font-tech text-center">Acessos Rápidos Facilitados</span>
-            
-            <div className="grid grid-cols-1 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
-              {/* Admin */}
-              <button
-                type="button"
-                onClick={() => handleShortcutLogin("admin")}
-                className="p-2.5 text-left bg-zinc-950 rounded-xl border border-[#C5A059] hover:border-[#E5D1B0] transition-all cursor-pointer group"
-              >
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[11px] font-bold text-[#E5D1B0] font-tech uppercase tracking-wide group-hover:text-white">AGÊNCIA ADMIN SUPREMO</span>
-                  <span className="text-[8px] bg-[#C5A059]/20 text-white font-bold px-1.5 py-0.5 rounded border border-[#C5A059]">ADM TECH</span>
-                </div>
-                <p className="text-[10px] text-zinc-300">Login: <span className="text-[#C5A059] font-mono">admcaro</span> | Senha: <span className="text-[#C5A059] font-mono">admcaro</span></p>
-              </button>
-
-              {/* Agency standard */}
-              <button
-                type="button"
-                onClick={() => handleShortcutLogin("agency")}
-                className="p-2.5 text-left bg-zinc-950 rounded-xl border border-white/5 hover:border-[#C5A059]/40 transition-all cursor-pointer group opacity-90 hover:opacity-100"
-              >
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-[11px] font-bold text-white font-tech uppercase tracking-wide group-hover:text-[#E5D1B0]">Carol (Agência Editora)</span>
-                  <span className="text-[8px] bg-zinc-900 border border-white/10 text-zinc-400 px-1.5 py-0.5 rounded">Agência</span>
-                </div>
-                <p className="text-[10px] text-zinc-400">E-mail: <span className="text-zinc-300 font-mono">agencia@carotech.com</span> | Senha: <span className="text-zinc-300 font-mono">caro2026</span></p>
-              </button>
-
-              {/* Dynamics Clients List mapping */}
-              {clients.map((cli) => (
-                <button
-                  key={cli.id}
-                  type="button"
-                  onClick={() => handleShortcutLogin(cli.email)}
-                  className="p-2.5 text-left bg-zinc-950 rounded-xl border border-white/5 hover:border-white/20 transition-all cursor-pointer group opacity-90 hover:opacity-100"
-                >
-                  <div className="flex justify-between items-center mb-0.5">
-                    <span className="text-[11px] font-bold text-zinc-200 font-tech uppercase tracking-wide group-hover:text-[#E5D1B0]">{cli.name}</span>
-                    <span className="text-[8px] bg-zinc-900 border border-white/5 text-[#C5A059] px-1.5 py-0.5 rounded flex items-center gap-1">
-                      <Briefcase className="w-2 h-2" /> Cliente
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400">E-mail: <span className="text-zinc-300 font-mono">{cli.email}</span> | Senha: <span className="text-zinc-200 font-mono font-bold">{cli.password || "caro2026"}</span></p>
-                  <p className="text-[9px] text-[#C5A059] italic mt-0.5 leading-none">{cli.tagline}</p>
-                </button>
-              ))}
-            </div>
-          </div>
         </motion.div>
       </div>
 
       {/* Footer credit */}
       <footer className="text-center text-[10px] text-zinc-600 font-tech uppercase tracking-wider select-none">
-        CARO TECH ATELIER • SEGURANÇA E ALTA COSTURA DIGITAL • 2026
+        CA.RO TECH • TECNOLOGIA & DESIGN ESTRATÉGICO • 2026
       </footer>
     </div>
   );

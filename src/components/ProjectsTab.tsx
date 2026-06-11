@@ -467,7 +467,7 @@ export default function ProjectsTab({ projects, onAddProject, onUpdateProject, c
                       <span>Estúdio de Briefing Síncrono • CA.RO TECH IA</span>
                     </div>
                     <p className="text-[11px] text-zinc-400">
-                      Escreva um conceito livre e rápido (ex: <i>"fotos aéreas em Alphaville com os carros, contraste cinza"</i>). Nossa inteligência estruturará de forma requintada o título, os objetivos de alto impacto e completará as datas previstas.
+                      Escreva um conceito livre e rápido (ex: <i>"fotos aéreas em Barueri com os carros, contraste cinza"</i>). Nossa inteligência estruturará de forma requintada o título, os objetivos de alto impacto e completará as datas previstas.
                     </p>
                     <div className="flex gap-2">
                       <input
