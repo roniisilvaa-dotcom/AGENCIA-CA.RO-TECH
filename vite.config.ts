@@ -20,3 +20,5 @@ export default defineConfig(() => {
     },
   };
 });
+
+// FORCE RESTART: 2026-06-11 v4

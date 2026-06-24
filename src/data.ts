@@ -21,23 +21,22 @@ export const INITIAL_METRICS: ResultMetrics = {
   opportunities: 0
 };
 
-// Help helper for initial state setup in localStorage to manage data seamlessly and permit edits.
+// These synchronous functions now just return initial defaults on first render,
+// as the actual data will be loaded asynchronously in App.tsx via /api/sync
 export function getSavedOrCreate<T>(key: string, initial: T): T {
-  if (typeof window === "undefined") return initial;
-  const sav = localStorage.getItem(key);
-  if (sav) {
-    try {
-      return JSON.parse(sav) as T;
-    } catch (e) {
-      return initial;
-    }
-  }
-  localStorage.setItem(key, JSON.stringify(initial));
   return initial;
 }
 
-export function saveState<T>(key: string, data: T): void {
+export async function saveState<T>(key: string, data: T): Promise<void> {
   if (typeof window !== "undefined") {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      await fetch('/api/saveState', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, data })
+      });
+    } catch (err) {
+      console.error('Failed to sync state to Neon DB', err);
+    }
   }
 }

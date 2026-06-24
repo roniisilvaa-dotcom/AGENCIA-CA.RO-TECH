@@ -3,6 +3,9 @@ import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
+import { db } from "./src/db";
+import { eq } from "drizzle-orm";
+import { clients, projects, meetings, approvals, clientMessages, publications, pendings, reports } from "./src/db/schema";
 
 dotenv.config();
 
@@ -34,6 +37,78 @@ function getAi(): GoogleGenAI {
 // 1. Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
+});
+
+// --- Neon DB Routes ---
+
+// Get all initial data
+app.get("/api/sync", async (req, res) => {
+  try {
+    const allClients = await db.select().from(clients);
+    const allProjects = await db.select().from(projects);
+    const allMeetings = await db.select().from(meetings);
+    const allApprovals = await db.select().from(approvals);
+    const allClientMessages = await db.select().from(clientMessages);
+    const allPublications = await db.select().from(publications);
+    const allPendings = await db.select().from(pendings);
+    const allReports = await db.select().from(reports);
+
+    res.json({
+      clients: allClients,
+      projects: allProjects,
+      meetings: allMeetings,
+      approvals: allApprovals,
+      clientMessages: allClientMessages,
+      publications: allPublications,
+      pendings: allPendings,
+      reports: allReports,
+    });
+  } catch (error) {
+    console.error("DB Sync Error:", error);
+    res.status(500).json({ error: "Failed to sync with database." });
+  }
+});
+
+// Generic save state endpoint (Simulates localStorage behavior for MVP migration)
+// It accepts a 'key' (e.g. 'caro_clients') and the array of data.
+// In a real app we'd use specific endpoints, but this makes the migration seamless.
+app.post("/api/saveState", async (req, res) => {
+  try {
+    const { key, data } = req.body;
+    
+    // Very simplified generic saving logic for the MVP transition
+    if (key === "caro_clients") {
+      // Clear and rewrite for simplicity in this MVP transition
+      await db.delete(clients);
+      if (data.length > 0) await db.insert(clients).values(data);
+    } else if (key === "caro_projects") {
+      await db.delete(projects);
+      if (data.length > 0) await db.insert(projects).values(data);
+    } else if (key === "caro_meetings") {
+      await db.delete(meetings);
+      if (data.length > 0) await db.insert(meetings).values(data);
+    } else if (key === "caro_approvals") {
+      await db.delete(approvals);
+      if (data.length > 0) await db.insert(approvals).values(data);
+    } else if (key === "caro_client_messages") {
+      await db.delete(clientMessages);
+      if (data.length > 0) await db.insert(clientMessages).values(data);
+    } else if (key === "caro_publications") {
+      await db.delete(publications);
+      if (data.length > 0) await db.insert(publications).values(data);
+    } else if (key === "caro_pendings") {
+      await db.delete(pendings);
+      if (data.length > 0) await db.insert(pendings).values(data);
+    } else if (key === "caro_reports") {
+      await db.delete(reports);
+      if (data.length > 0) await db.insert(reports).values(data);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error("DB Save Error:", error);
+    res.status(500).json({ error: "Failed to save state." });
+  }
 });
 
 // 2. Generate premium strategic recommendations

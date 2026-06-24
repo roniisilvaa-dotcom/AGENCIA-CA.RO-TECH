@@ -104,3 +104,18 @@ export interface ResultMetrics {
   leads: number;
   opportunities: number;
 }
+
+export interface ClientReport {
+  id: string;
+  clientEmail: string;
+  month: string;
+  year: string;
+  title: string;
+  rawContentText: string;
+  imageUrl?: string;
+  aiAnalysis: string;
+  reach: number;
+  impressions: number;
+  engagement: number;
+  clicks: number;
+}

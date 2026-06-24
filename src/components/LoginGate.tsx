@@ -35,6 +35,13 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     } catch {
       setClients(INITIAL_CLIENTS);
     }
+
+    // Auto-fill client email from QR Code URL
+    const params = new URLSearchParams(window.location.search);
+    const clientParam = params.get("client");
+    if (clientParam) {
+      setEmail(clientParam);
+    }
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -13,7 +13,8 @@ import {
   Linkedin, 
   MapPin, 
   Clock,
-  Briefcase
+  Briefcase,
+  QrCode
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -31,6 +32,7 @@ export default function ClientsTab({
   onUpdateClient
 }: ClientsTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showQrFor, setShowQrFor] = useState<string | null>(null);
 
   // Registration form states
   const [newClientName, setNewClientName] = useState("");
@@ -599,6 +601,7 @@ export default function ClientsTab({
                           </span>
                         )}
                         
+                        
                         <button
                           onClick={() => {
                             setEditingClient(cli);
@@ -632,6 +635,38 @@ export default function ClientsTab({
                         </button>
                       </div>
                     </div>
+
+                    {/* BIG QR CODE BUTTON */}
+                    <div className="pt-2">
+                      <button
+                        onClick={() => setShowQrFor(showQrFor === cli.id ? null : cli.id)}
+                        className="w-full py-2.5 bg-emerald-600/20 border border-emerald-500/30 hover:bg-emerald-500/30 text-emerald-400 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      >
+                        <QrCode className="w-4 h-4" /> 
+                        {showQrFor === cli.id ? "Esconder QR Code" : "Gerar QR Code de Acesso (Login)"}
+                      </button>
+                    </div>
+
+                    {showQrFor === cli.id && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="border-t border-white/5 pt-4 pb-2 flex flex-col items-center justify-center space-y-3"
+                      >
+                        <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-wider font-bold">Acesso Direto do Cliente</span>
+                        <div className="bg-white p-2.5 rounded-xl border-2 border-[#C5A059]">
+                          <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/?client=" + cli.email)}`} 
+                            alt="QR Code" 
+                            className="w-32 h-32" 
+                          />
+                        </div>
+                        <span className="text-[9px] text-zinc-400 font-mono text-center px-4 leading-relaxed">
+                          Mostre este QR Code para o cliente ler com a câmera do celular.<br/>
+                          O e-mail será preenchido automaticamente.
+                        </span>
+                      </motion.div>
+                    )}
                   </div>
                 );
               })}

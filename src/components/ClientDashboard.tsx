@@ -23,7 +23,11 @@ import {
   Info,
   ChevronRight,
   TrendingUp,
-  LayoutGrid
+  LayoutGrid,
+  Settings,
+  Lock,
+  Mail,
+  Edit
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -40,9 +44,11 @@ interface ClientDashboardProps {
   publications: Publication[];
   pendings: PendingItem[];
   clientMessages: ClientMessage[];
+  reports: ClientReport[];
   onAddClientMessage: (msg: ClientMessage) => void;
   onUpdateApproval: (item: ApprovalItem) => void;
   onAddMeeting: (meet: Meeting) => void;
+  onUpdateClient: (client: Client) => void;
 }
 
 export default function ClientDashboard({
@@ -54,9 +60,11 @@ export default function ClientDashboard({
   publications,
   pendings,
   clientMessages,
+  reports,
   onAddClientMessage,
   onUpdateApproval,
-  onAddMeeting
+  onAddMeeting,
+  onUpdateClient
 }: ClientDashboardProps) {
   // Find logged in client
   const clientObj = clients.find(c => c.email.toLowerCase() === currentUser.email.toLowerCase()) || {
@@ -106,6 +114,146 @@ export default function ClientDashboard({
     growth: string;
     insights: string[];
   } | null>(null);
+
+  // Month selector for client report
+  const [selectedReportMonth, setSelectedReportMonth] = useState("Janeiro");
+  const [selectedReportYear, setSelectedReportYear] = useState("2026");
+
+  // Profile edit states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editClientPassword, setEditClientPassword] = useState(clientObj.password || "");
+  const [editClientName, setEditClientName] = useState(clientObj.name);
+  const [editClientTagline, setEditClientTagline] = useState(clientObj.tagline || "");
+  const [editClientCnpj, setEditClientCnpj] = useState(clientObj.cnpj || "");
+  const [editClientLogoUrl, setEditClientLogoUrl] = useState(clientObj.logoUrl || "");
+  const [editClientWebsite, setEditClientWebsite] = useState(clientObj.website || "");
+  const [editClientInstagram, setEditClientInstagram] = useState(clientObj.instagram || "");
+  const [editClientLinkedin, setEditClientLinkedin] = useState(clientObj.linkedin || "");
+  const [editClientAddress, setEditClientAddress] = useState(clientObj.address || "");
+  const [profileUpdateSuccess, setProfileUpdateSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEditClientPassword(clientObj.password || "");
+    setEditClientName(clientObj.name);
+    setEditClientTagline(clientObj.tagline || "");
+    setEditClientCnpj(clientObj.cnpj || "");
+    setEditClientLogoUrl(clientObj.logoUrl || "");
+    setEditClientWebsite(clientObj.website || "");
+    setEditClientInstagram(clientObj.instagram || "");
+    setEditClientLinkedin(clientObj.linkedin || "");
+    setEditClientAddress(clientObj.address || "");
+  }, [clientObj]);
+
+  const handleUpdateProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updatedCli: Client = {
+      ...clientObj,
+      name: editClientName,
+      password: editClientPassword,
+      tagline: editClientTagline,
+      cnpj: editClientCnpj,
+      logoUrl: editClientLogoUrl,
+      website: editClientWebsite,
+      instagram: editClientInstagram,
+      linkedin: editClientLinkedin,
+      address: editClientAddress
+    };
+    onUpdateClient(updatedCli);
+    setProfileUpdateSuccess("Perfil e acessos atualizados com sucesso!");
+    setTimeout(() => {
+      setProfileUpdateSuccess(null);
+      setShowProfileModal(false);
+    }, 3000);
+  };
+
+  const activeReport = reports.find(
+    (r) =>
+      r.clientEmail.toLowerCase() === currentUser.email.toLowerCase() &&
+      r.month === selectedReportMonth &&
+      r.year === selectedReportYear
+  );
+
+  const handleDownloadMonthlyPDF = () => {
+    if (!activeReport) return;
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Relatório Mensal - ${clientObj.name} - ${activeReport.month}/${activeReport.year}</title>
+          <style>
+            body { font-family: 'Times New Roman', Times, serif; background-color: #ffffff; color: #111111; padding: 40px; line-height: 1.6; }
+            .header { border-bottom: 2px solid #8F7035; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+            .logo-placeholder { font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #8F7035; text-transform: uppercase; }
+            .title { font-size: 28px; margin-top: 10px; margin-bottom: 5px; font-style: italic; }
+            .meta { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+            .section { margin-bottom: 30px; }
+            .section-title { font-size: 18px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: #8F7035; }
+            .metric-box { display: grid; grid-template-cols: repeat(4, 1fr); gap: 15px; background: #f9f9f9; padding: 15px; border-left: 4px solid #8F7035; margin-bottom: 20px; font-size: 14px; }
+            .metric-item { display: flex; flex-direction: column; }
+            .metric-label { font-size: 10px; text-transform: uppercase; color: #666; }
+            .metric-value { font-size: 18px; font-weight: bold; color: #111; }
+            .chart-container { margin-top: 20px; margin-bottom: 20px; text-align: center; }
+            .chart-img { max-width: 100%; height: auto; border: 1px solid #ddd; padding: 5px; max-height: 300px; object-fit: contain; }
+            .footer { margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px; font-size: 10px; text-align: center; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo-placeholder">CA.RO TECH ATELIER</div>
+            <div class="title">Relatório de Performance Mensal</div>
+            <div class="meta">${clientObj.name} &bull; ${activeReport.month} de ${activeReport.year}</div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Métricas de Performance Unificadas</div>
+            <div class="metric-box">
+              <div class="metric-item">
+                <span class="metric-label">Alcance (Reach)</span>
+                <span class="metric-value">${activeReport.reach.toLocaleString()}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Impressões</span>
+                <span class="metric-value">${activeReport.impressions.toLocaleString()}</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Engajamento %</span>
+                <span class="metric-value">${activeReport.engagement}%</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Cliques</span>
+                <span class="metric-value">${activeReport.clicks.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          ${activeReport.imageUrl ? `
+          <div class="section">
+            <div class="section-title">Gráfico de Performance Estratégica</div>
+            <div class="chart-container">
+              <img class="chart-img" src="${activeReport.imageUrl}" alt="Gráfico Mensal" />
+            </div>
+          </div>
+          ` : ""}
+
+          <div class="section">
+            <div class="section-title">Análise de IA & Considerações Finais</div>
+            <p style="white-space: pre-line;">${activeReport.aiAnalysis}</p>
+          </div>
+
+          <div class="footer">
+            CA.RO TECH &bull; TECNOLOGIA & DESIGN ESTRATÉGICO &bull; BARUERI, SP
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   // Generate notifications and mock reports dynamically based on actual state
   useEffect(() => {
@@ -355,6 +503,12 @@ export default function ClientDashboard({
             <div>
               <h1 className="font-serif text-2xl text-white font-medium">{clientObj.name}</h1>
               <p className="text-[11px] text-[#C5A059] italic mt-0.5">"{clientObj.tagline}"</p>
+              <button 
+                onClick={() => setShowProfileModal(true)}
+                className="mt-3 flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-white/10 hover:border-[#C5A059]/40 text-zinc-300 hover:text-white rounded-lg text-[9px] font-tech uppercase tracking-wider transition-all cursor-pointer"
+              >
+                <Settings className="w-3.5 h-3.5 text-[#C5A059]" /> Meu Perfil e Acessos
+              </button>
             </div>
           </div>
 
@@ -409,48 +563,92 @@ export default function ClientDashboard({
         </div>
       </motion.div>
 
-      {/* 3. RELATÓRIO SEMANAL COM I.A E DOWNLOAD EM PDF */}
+      {/* 3. RELATÓRIO MENSAL COM I.A E DOWNLOAD EM PDF */}
       <motion.div 
         initial={{ opacity: 0, y: 15 }} 
         animate={{ opacity: 1, y: 0 }}
         className="luxury-card p-6 rounded-2xl border border-[#C5A059]/20 bg-[#0c0c0c] relative overflow-hidden"
       >
         <div className="absolute inset-0 geo-grid opacity-10 pointer-events-none" />
-        <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 mb-4 gap-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-[#C5A059]" />
-            <h3 className="font-serif text-lg text-white">Relatório Semanal I.A. Oracle</h3>
+            <h3 className="font-serif text-lg text-white">Relatório Mensal de Performance</h3>
           </div>
-          <button 
-            onClick={handleDownloadPDF}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold font-tech text-[10px] uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" /> Baixar Relatório PDF
-          </button>
+          
+          <div className="flex items-center gap-3">
+            <select 
+              value={selectedReportMonth}
+              onChange={(e) => setSelectedReportMonth(e.target.value)}
+              className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#C5A059] cursor-pointer"
+            >
+              {["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"].map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select 
+              value={selectedReportYear}
+              onChange={(e) => setSelectedReportYear(e.target.value)}
+              className="bg-zinc-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#C5A059] cursor-pointer"
+            >
+              {["2025", "2026", "2027"].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            
+            <button 
+              onClick={handleDownloadMonthlyPDF}
+              disabled={!activeReport}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C5A059] hover:bg-[#E5D1B0] disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-zinc-950 font-bold font-tech text-[10px] uppercase tracking-wider rounded-lg transition-all active:scale-95 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" /> Baixar PDF
+            </button>
+          </div>
         </div>
 
-        {weeklyReport && (
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 text-left">
-            <div className="lg:col-span-8 space-y-3">
-              <span className="text-[10px] text-zinc-500 font-tech uppercase tracking-widest block">{weeklyReport.period}</span>
-              <p className="text-xs text-zinc-300 leading-relaxed font-light">{weeklyReport.summary}</p>
-            </div>
-            <div className="lg:col-span-4 bg-zinc-900/40 p-4 border border-white/5 rounded-xl flex flex-col justify-center text-center">
-              <span className="text-[10px] text-zinc-400 font-tech uppercase tracking-wider block">Crescimento de Alcance Semanal</span>
-              <div className="font-serif text-3.5xl text-[#C5A059] font-medium tracking-tight mt-1">{weeklyReport.growth}</div>
-              <span className="text-[9px] text-zinc-500 font-mono mt-1">Estimado baseado no multiplicador de marca</span>
+        {activeReport ? (
+          <div className="relative z-10 space-y-6 text-left">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-zinc-900/40 p-3 rounded-xl border border-white/5 text-center">
+                <span className="text-[10px] text-zinc-500 font-tech uppercase block">Alcance</span>
+                <span className="font-serif text-xl text-white block mt-1">{activeReport.reach.toLocaleString()}</span>
+              </div>
+              <div className="bg-zinc-900/40 p-3 rounded-xl border border-white/5 text-center">
+                <span className="text-[10px] text-zinc-500 font-tech uppercase block">Impressões</span>
+                <span className="font-serif text-xl text-white block mt-1">{activeReport.impressions.toLocaleString()}</span>
+              </div>
+              <div className="bg-zinc-900/40 p-3 rounded-xl border border-[#C5A059]/20 text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[#C5A059]/5" />
+                <span className="text-[10px] text-[#C5A059] font-tech uppercase block relative z-10">Engajamento</span>
+                <span className="font-serif text-xl text-[#C5A059] block mt-1 relative z-10">{activeReport.engagement}%</span>
+              </div>
+              <div className="bg-zinc-900/40 p-3 rounded-xl border border-white/5 text-center">
+                <span className="text-[10px] text-zinc-500 font-tech uppercase block">Cliques</span>
+                <span className="font-serif text-xl text-white block mt-1">{activeReport.clicks.toLocaleString()}</span>
+              </div>
             </div>
 
-            <div className="lg:col-span-12 border-t border-white/5 pt-4">
-              <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-wider block mb-2 font-bold">Insights Críticos Gerados</span>
-              <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                {weeklyReport.insights.map((ins, i) => (
-                  <li key={i} className="p-3 bg-zinc-900/30 rounded-xl border border-white/5 text-zinc-300 leading-normal font-light">
-                    • {ins}
-                  </li>
-                ))}
-              </ul>
+            {activeReport.imageUrl && (
+              <div className="w-full bg-zinc-900/50 rounded-xl border border-white/5 p-4 overflow-hidden flex justify-center items-center">
+                <img src={activeReport.imageUrl} alt="Gráfico de Performance" className="max-h-[350px] object-contain rounded-lg border border-white/10" />
+              </div>
+            )}
+
+            <div className="bg-zinc-950/80 p-5 rounded-xl border border-[#C5A059]/10">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-[#C5A059]" />
+                <span className="text-[11px] text-[#C5A059] font-tech uppercase tracking-wider font-bold">Análise Estratégica & Considerações</span>
+              </div>
+              <p className="text-xs text-zinc-300 leading-relaxed font-light whitespace-pre-line pl-1">
+                {activeReport.aiAnalysis}
+              </p>
             </div>
+          </div>
+        ) : (
+          <div className="py-12 text-center relative z-10 flex flex-col items-center justify-center bg-zinc-900/20 rounded-xl border border-white/5">
+            <FileText className="w-10 h-10 text-zinc-700 mb-3" />
+            <p className="text-zinc-400 text-sm font-medium">Nenhum relatório publicado para o período selecionado.</p>
+            <p className="text-zinc-600 text-[11px] mt-1.5 font-light">Selecione outro mês ou aguarde a atualização do seu gerente de conta.</p>
           </div>
         )}
       </motion.div>
@@ -940,6 +1138,162 @@ export default function ClientDashboard({
           </div>
         </div>
       </motion.div>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {showProfileModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="max-w-2xl w-full bg-[#0A0A0A] border border-white/10 p-6 rounded-2xl space-y-5 relative my-8"
+            >
+              <button 
+                onClick={() => setShowProfileModal(false)}
+                className="absolute top-4 right-4 p-1 hover:bg-white/5 rounded text-zinc-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+                <Settings className="w-5 h-5 text-[#C5A059]" />
+                <h3 className="font-serif text-lg text-white">Configurações de Conta e Acesso</h3>
+              </div>
+
+              {profileUpdateSuccess && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-xl flex items-center gap-2">
+                  <Check className="w-4 h-4" /> {profileUpdateSuccess}
+                </div>
+              )}
+
+              <form onSubmit={handleUpdateProfile} className="space-y-4 text-left">
+                {/* Credentials Section */}
+                <div className="bg-zinc-900/40 p-4 rounded-xl border border-white/5 space-y-3">
+                  <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-widest font-bold">Credenciais de Acesso</span>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] text-zinc-500 uppercase tracking-widest font-tech font-bold mb-1">E-mail de Login (Somente Leitura)</label>
+                      <div className="relative">
+                        <Mail className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                        <input
+                          type="email"
+                          disabled
+                          value={clientObj.email}
+                          className="w-full pl-9 pr-3 py-2 text-xs bg-zinc-950/50 border border-white/5 rounded-lg text-zinc-500 outline-none cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha Exclusiva</label>
+                      <div className="relative">
+                        <Lock className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                        <input
+                          type="text"
+                          required
+                          value={editClientPassword}
+                          onChange={(e) => setEditClientPassword(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Corporate Info Section */}
+                <div className="bg-zinc-900/40 p-4 rounded-xl border border-white/5 space-y-3">
+                  <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-widest font-bold">Dados Corporativos</span>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Nome da Empresa</label>
+                      <input
+                        type="text"
+                        required
+                        value={editClientName}
+                        onChange={(e) => setEditClientName(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">CNPJ</label>
+                      <input
+                        type="text"
+                        value={editClientCnpj}
+                        onChange={(e) => setEditClientCnpj(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Comercial</label>
+                      <input
+                        type="text"
+                        value={editClientAddress}
+                        onChange={(e) => setEditClientAddress(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Identity & Socials */}
+                <div className="bg-zinc-900/40 p-4 rounded-xl border border-white/5 space-y-3">
+                  <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-widest font-bold">Identidade & Presença Digital</span>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Slogan / Tagline</label>
+                      <input
+                        type="text"
+                        value={editClientTagline}
+                        onChange={(e) => setEditClientTagline(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">URL da Logomarca (PNG/JPG)</label>
+                      <input
+                        type="url"
+                        value={editClientLogoUrl}
+                        onChange={(e) => setEditClientLogoUrl(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
+                      <input
+                        type="url"
+                        value={editClientWebsite}
+                        onChange={(e) => setEditClientWebsite(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
+                      <input
+                        type="text"
+                        value={editClientInstagram}
+                        onChange={(e) => setEditClientInstagram(e.target.value)}
+                        className="w-full px-3 py-2 text-xs bg-zinc-900 border border-white/10 rounded-lg text-white focus:border-[#C5A059] outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="submit"
+                    className="w-full md:w-auto px-6 py-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold font-tech text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Edit className="w-3.5 h-3.5" /> Salvar Configurações
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

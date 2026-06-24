@@ -7,7 +7,8 @@ import {
   PendingItem, 
   ResultMetrics,
   Client,
-  ClientMessage
+  ClientMessage,
+  ClientReport
 } from "./types";
 import { 
   INITIAL_PROJECTS, 
@@ -32,6 +33,8 @@ import PendingsTab from "./components/PendingsTab";
 import LoginGate from "./components/LoginGate";
 import ClientDashboard from "./components/ClientDashboard";
 import ClientsTab from "./components/ClientsTab";
+import ReportsAdminTab from "./components/ReportsAdminTab";
+import SettingsTab from "./components/SettingsTab";
 
 // Lucide icons
 import { 
@@ -46,7 +49,10 @@ import {
   X,
   Sparkles,
   ExternalLink,
-  Building2
+  Building2,
+  FileText,
+  Settings,
+  Compass
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -75,6 +81,15 @@ export default function App() {
     localStorage.removeItem("caro_login");
   };
 
+  // Check URL for client login intent (e.g. from QR Code)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const clientParam = params.get("client");
+    if (clientParam && currentUser && currentUser.email !== clientParam) {
+      handleLogout();
+    }
+  }, [currentUser]);
+
   const handleResetSystem = () => {
     if (confirm("Aviso supremo: Deseja realmente ZERAR e limpar todo o banco de dados local do sistema? Isso apagará todos os clientes, projetos, pendências e mensagens cadastrados.")) {
       localStorage.clear();
@@ -89,35 +104,30 @@ export default function App() {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [pendings, setPendings] = useState<PendingItem[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [reports, setReports] = useState<ClientReport[]>([]);
+  const [isLoadingDb, setIsLoadingDb] = useState(true);
   const [clientMessages, setClientMessages] = useState<ClientMessage[]>([]);
   const [metrics, setMetrics] = useState<ResultMetrics>(INITIAL_METRICS);
 
-  // Initialize data on component mount
+  // Synchronize state with DB on first load
   useEffect(() => {
-    setProjects(getSavedOrCreate<Project[]>("caro_projects", INITIAL_PROJECTS));
-    setMeetings(getSavedOrCreate<Meeting[]>("caro_meetings", INITIAL_MEETINGS));
-    setApprovals(getSavedOrCreate<ApprovalItem[]>("caro_approvals", INITIAL_APPROVALS));
-    setPublications(getSavedOrCreate<Publication[]>("caro_publications", INITIAL_PUBLICATIONS));
-    setPendings(getSavedOrCreate<PendingItem[]>("caro_pendings", INITIAL_PENDINGS));
-    setClients(getSavedOrCreate<Client[]>("caro_clients", INITIAL_CLIENTS));
-    setClientMessages(getSavedOrCreate<ClientMessage[]>("caro_client_messages", [
-      {
-        id: "msg-init-1",
-        clientEmail: "mundi@tkr.com",
-        senderName: "Agência CA.RO TECH",
-        senderRole: "agency",
-        text: "Bem-vindos ao nosso espaço unificado de Barueri. Deixem suas considerações ou avisos urgentes aqui para nossa equipe de criação síncrona.",
-        timestamp: "07/06/2026, 14:00"
-      },
-      {
-        id: "msg-init-2",
-        clientEmail: "dadoskagiva@gmail.com",
-        senderName: "Agência CA.RO TECH",
-        senderRole: "agency",
-        text: "Olá equipe Kagiva Sports! Fuso de São Paulo sintonizado com Alphaville. Aguardamos sua revisão dos novos posts de alto impacto esportivo.",
-        timestamp: "07/06/2026, 14:15"
-      }
-    ]));
+    fetch("/api/sync")
+      .then(res => res.json())
+      .then(data => {
+        if (data.clients) setClients(data.clients);
+        if (data.projects) setProjects(data.projects);
+        if (data.meetings) setMeetings(data.meetings);
+        if (data.approvals) setApprovals(data.approvals);
+        if (data.clientMessages) setClientMessages(data.clientMessages);
+        if (data.publications) setPublications(data.publications);
+        if (data.pendings) setPendings(data.pendings);
+        if (data.reports) setReports(data.reports);
+        setIsLoadingDb(false);
+      })
+      .catch(err => {
+        console.error("Failed to load from Neon DB:", err);
+        setIsLoadingDb(false);
+      });
   }, []);
 
   // Update localStorage when state alters
@@ -202,9 +212,22 @@ export default function App() {
     saveState("caro_pendings", updated);
   };
 
+  const handleAddReport = (newRep: ClientReport) => {
+    const updated = [newRep, ...reports];
+    setReports(updated);
+    saveState("caro_reports", updated);
+  };
+
+  const handleDeleteReport = (id: string) => {
+    const updated = reports.filter(r => r.id !== id);
+    setReports(updated);
+    saveState("caro_reports", updated);
+  };
+
   const sidebarTabs = [
     { id: "dashboard", label: "Painel Geral", icon: LayoutDashboard },
     { id: "clientes", label: "Gestão de Clientes", icon: Building2 },
+    { id: "relatorios-admin", label: "Relatórios Clientes", icon: FileText },
     { id: "reunioes", label: "Histórico de Reuniões", icon: Users },
     { id: "projetos", label: "Mesa Kanban & Status", icon: Layers },
     { id: "portal-ai", label: "Portal I.A Oracle", icon: Sparkles },
@@ -212,6 +235,7 @@ export default function App() {
     { id: "publicacoes", label: "Publicações", icon: FileCheck2 },
     { id: "resultados", label: "Métricas & Relatórios", icon: TrendingUp },
     { id: "pendencias", label: "Pendências Cliente", icon: AlertTriangle, badge: pendings.length },
+    { id: "configuracoes", label: "Configurações do Sistema", icon: Settings },
   ];
 
   const handleTabChange = (tabId: string) => {
@@ -247,6 +271,15 @@ export default function App() {
             onUpdateClient={handleUpdateClient}
           />
         );
+      case "relatorios-admin":
+        return (
+          <ReportsAdminTab
+            clients={clients}
+            reports={reports}
+            onAddReport={handleAddReport}
+            onDeleteReport={handleDeleteReport}
+          />
+        );
       case "reunioes":
         return <MeetingsTab meetings={meetings} onAddMeeting={handleAddMeeting} currentUser={currentUser} />;
       case "projetos":
@@ -261,6 +294,8 @@ export default function App() {
         return <ResultsTab metrics={metrics} projects={projects} clients={clients} publications={publications} currentUser={currentUser} />;
       case "pendencias":
         return <PendingsTab pendings={pendings} onAddPending={handleAddPending} onResolvePending={handleResolvePending} currentUser={currentUser} />;
+      case "configuracoes":
+        return <SettingsTab />;
       default:
         return (
           <DashboardTab 
@@ -280,6 +315,15 @@ export default function App() {
         );
     }
   };
+
+  if (isLoadingDb) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center font-tech space-y-4">
+        <Compass className="w-8 h-8 text-[#C5A059] animate-spin-slow" />
+        <p className="text-[10px] text-[#C5A059] tracking-[0.2em] uppercase">Sincronizando Banco de Dados...</p>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <LoginGate onLogin={handleLogin} />;
@@ -485,9 +529,11 @@ export default function App() {
               publications={publications}
               pendings={pendings}
               clientMessages={clientMessages}
+              reports={reports}
               onAddClientMessage={handleAddClientMessage}
               onUpdateApproval={handleUpdateApproval}
               onAddMeeting={handleAddMeeting}
+              onUpdateClient={handleUpdateClient}
             />
           ) : (
             <AnimatePresence mode="wait">
