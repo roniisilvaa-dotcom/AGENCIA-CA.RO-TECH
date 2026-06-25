@@ -73,13 +73,23 @@ export default function ClientsTab({
       return;
     }
 
+    // Generate token in the pattern requested (e.g., CARO-CLI-XPTO-RANDOM)
+    const cleanName = newClientName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove accents
+      .replace(/[^a-zA-Z0-9]/g, "")    // Remove symbols
+      .toUpperCase()
+      .substring(0, 5);
+    const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const generatedToken = `CARO-CLI-${cleanName}-${randSuffix}`;
+
     const newCli: Client = {
       id: `cli-${Date.now()}`,
       name: newClientName,
       email: newClientEmail,
-      password: newClientPassword || "cliente123",
+      accessToken: generatedToken,
       tagline: newClientTagline || "Parceiro CA.RO TECH",
-      welcomeMessage: "Bem-vindo ao seu ateliê digital síncrono.",
+      welcomeMessage: "Bem-vindo ao seu painel digital síncrono.",
       reachMultiplier: 1.0,
       cnpj: newClientCnpj,
       logoUrl: newClientLogoUrl,
@@ -91,7 +101,7 @@ export default function ClientsTab({
     };
 
     onAddClient(newCli);
-    setClientRegSuccess(`Cliente "${newClientName}" cadastrado com sucesso! Credenciais de acesso: e-mail ${newClientEmail} | senha ${newCli.password}`);
+    setClientRegSuccess(`Cliente "${newClientName}" cadastrado com sucesso! Token de Acesso gerado: ${newCli.accessToken}`);
     
     // Clear registration fields
     setNewClientName("");
@@ -106,7 +116,7 @@ export default function ClientsTab({
     setNewClientAddress("");
     setNewClientStatus("Ativo");
 
-    setTimeout(() => setClientRegSuccess(null), 8000);
+    setTimeout(() => setClientRegSuccess(null), 10000);
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -124,7 +134,7 @@ export default function ClientsTab({
       linkedin: editClientLinkedin,
       address: editClientAddress,
       status: editClientStatus,
-      password: editClientPassword
+      accessToken: editClientPassword || editingClient.accessToken // Re-use editClientPassword state variable to hold/edit the token
     };
 
     onUpdateClient(updatedCli);
@@ -236,7 +246,7 @@ export default function ClientsTab({
                       />
                     </div>
                     <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Token de Acesso</label>
                       <input
                         type="text"
                         value={editClientPassword}
@@ -379,28 +389,16 @@ export default function ClientsTab({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">E-mail de Login</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="cliente@exemplo.com"
-                        value={newClientEmail}
-                        onChange={(e) => setNewClientEmail(e.target.value)}
-                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha de Acesso</label>
-                      <input
-                        type="text"
-                        placeholder="Ex: senha123"
-                        value={newClientPassword}
-                        onChange={(e) => setNewClientPassword(e.target.value)}
-                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all font-mono"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">E-mail de Login</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="cliente@exemplo.com"
+                      value={newClientEmail}
+                      onChange={(e) => setNewClientEmail(e.target.value)}
+                      className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -431,7 +429,7 @@ export default function ClientsTab({
                       <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Website URL</label>
                       <input
                         type="url"
-                        placeholder="Ex: https://..."
+                        placeholder="Ex: https://exemplo.com"
                         value={newClientWebsite}
                         onChange={(e) => setNewClientWebsite(e.target.value)}
                         className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
@@ -442,7 +440,7 @@ export default function ClientsTab({
                       <select
                         value={newClientStatus}
                         onChange={(e) => setNewClientStatus(e.target.value as "Ativo" | "Inativo" | "Suspenso")}
-                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer"
+                        className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all cursor-pointer font-bold"
                       >
                         <option value="Ativo">🟢 Ativo</option>
                         <option value="Inativo">🟡 Inativo</option>
@@ -456,7 +454,7 @@ export default function ClientsTab({
                       <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Instagram (@usuario)</label>
                       <input
                         type="text"
-                        placeholder="Ex: @minhamarca"
+                        placeholder="Ex: @empresa"
                         value={newClientInstagram}
                         onChange={(e) => setNewClientInstagram(e.target.value)}
                         className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
@@ -466,7 +464,7 @@ export default function ClientsTab({
                       <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">LinkedIn (Username)</label>
                       <input
                         type="text"
-                        placeholder="Ex: minhamarca"
+                        placeholder="Ex: company/nome-empresa"
                         value={newClientLinkedin}
                         onChange={(e) => setNewClientLinkedin(e.target.value)}
                         className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
@@ -478,7 +476,7 @@ export default function ClientsTab({
                     <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Endereço Comercial</label>
                     <input
                       type="text"
-                      placeholder="Ex: Rua das Flores, 1200 - São Paulo"
+                      placeholder="Ex: Av. Paulista, 1000 - Bela Vista, SP"
                       value={newClientAddress}
                       onChange={(e) => setNewClientAddress(e.target.value)}
                       className="w-full text-xs bg-zinc-900 border border-white/10 rounded-lg p-2.5 text-white focus:border-[#C5A059] outline-none transition-all"
@@ -487,9 +485,9 @@ export default function ClientsTab({
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-2"
+                    className="w-full py-3 bg-[#C5A059] hover:bg-[#E5D1B0] hover:scale-[1.01] text-zinc-950 font-bold uppercase tracking-wider font-tech text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg mt-4"
                   >
-                    <UserPlus className="w-3.5 h-3.5" /> Efetuar Cadastro
+                    Salvar e Registrar Cliente <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
               </motion.div>
@@ -497,81 +495,74 @@ export default function ClientsTab({
           </AnimatePresence>
         </div>
 
-        {/* Right Column: Client Cards Grid */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="p-1 bg-[#C5A059]/15 rounded text-[#C5A059]">
-              <Briefcase className="w-4 h-4" />
-            </span>
+        {/* Right Column: Active Clients List */}
+        <div className="lg:col-span-7 luxury-card p-6 rounded-2xl border border-white/[0.03] bg-zinc-950/80 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
             <span className="text-xs font-bold text-[#E5D1B0] uppercase font-tech tracking-wider">
-              Contas e Parcerias Ativas ({filteredClients.length})
+              Clientes Ativos no Database ({filteredClients.length})
             </span>
           </div>
 
           {filteredClients.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500 border border-white/5 rounded-2xl bg-zinc-950/30">
-              Nenhum cliente cadastrado ou correspondente à busca.
+            <div className="text-center py-12 text-zinc-500 text-xs">
+              Nenhum cliente cadastrado no momento.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1">
               {filteredClients.map((cli) => {
-                const isActive = cli.status === "Ativo";
                 return (
                   <div 
-                    key={cli.id} 
-                    className="luxury-card p-5 rounded-2xl border border-white/5 hover:border-[#C5A059]/30 transition-all space-y-4 flex flex-col justify-between"
+                    key={cli.id}
+                    className="luxury-card p-4 rounded-xl border border-white/5 hover:border-[#C5A059]/20 bg-zinc-900/40 relative space-y-3"
                   >
-                    {/* Header info */}
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/15 overflow-hidden flex items-center justify-center p-1">
-                            {cli.logoUrl ? (
-                              <img src={cli.logoUrl} alt={cli.name} className="w-full h-full object-contain" />
-                            ) : (
-                              <Building2 className="w-5 h-5 text-zinc-650" />
-                            )}
-                          </div>
-                          <div className="text-left">
-                            <h4 className="font-serif text-sm text-white font-medium">{cli.name}</h4>
-                            <span className="text-[9px] text-zinc-400 font-mono select-all block">{cli.email}</span>
-                          </div>
+                    {/* Header: Logo and Info */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center p-1 overflow-hidden shrink-0">
+                          {cli.logoUrl ? (
+                            <img src={cli.logoUrl} alt={cli.name} className="w-full h-full object-contain" />
+                          ) : (
+                            <Building2 className="w-5 h-5 text-zinc-650" />
+                          )}
                         </div>
-
-                        {/* Status Toggle & Actions */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => toggleClientStatus(cli)}
-                            className={`px-2 py-0.5 text-[8px] font-tech uppercase font-bold rounded-full border cursor-pointer select-none transition-all ${
-                              cli.status === "Ativo" 
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                                : cli.status === "Inativo"
-                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                            }`}
-                            title="Alternar Ativo/Inativo"
-                          >
-                            {cli.status || "Ativo"}
-                          </button>
+                        <div className="text-left">
+                          <h4 className="font-serif text-sm text-white font-medium truncate max-w-[120px]">{cli.name}</h4>
+                          <span className="text-[9px] text-zinc-500 truncate block max-w-[120px]">{cli.email}</span>
                         </div>
                       </div>
-
-                      <div className="text-left space-y-1.5 pt-1">
-                        <div className="text-[10px] text-zinc-400 italic">"{cli.tagline}"</div>
-                        
-                        {cli.cnpj && (
-                          <div className="text-[9px] text-zinc-500 font-mono">
-                            CNPJ: <strong className="text-zinc-300 font-semibold">{cli.cnpj}</strong>
-                          </div>
-                        )}
-                        
-                        {cli.address && (
-                          <div className="text-[9px] text-zinc-500 flex items-start gap-1">
-                            <MapPin className="w-3 h-3 text-[#C5A059] shrink-0 mt-0.5" />
-                            <span className="truncate">{cli.address}</span>
-                          </div>
-                        )}
+                      
+                      <div className="flex flex-col items-end gap-1.5">
+                        <button
+                          onClick={() => toggleClientStatus(cli)}
+                          className={`text-[8px] px-2 py-0.5 rounded font-tech uppercase tracking-wider border font-bold cursor-pointer transition-all ${
+                            cli.status === "Ativo"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : cli.status === "Suspenso"
+                              ? "bg-rose-500/10 text-rose-450 border-rose-500/20"
+                              : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                          }`}
+                          title="Alternar Ativo/Inativo"
+                        >
+                          {cli.status || "Ativo"}
+                        </button>
                       </div>
+                    </div>
+
+                    <div className="text-left space-y-1.5 pt-1">
+                      <div className="text-[10px] text-zinc-400 italic">"{cli.tagline}"</div>
+                      
+                      {cli.cnpj && (
+                        <div className="text-[9px] text-zinc-500 font-mono">
+                          CNPJ: <strong className="text-zinc-300 font-semibold">{cli.cnpj}</strong>
+                        </div>
+                      )}
+                      
+                      {cli.address && (
+                        <div className="text-[9px] text-zinc-500 flex items-start gap-1">
+                          <MapPin className="w-3 h-3 text-[#C5A059] shrink-0 mt-0.5" />
+                          <span className="truncate">{cli.address}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Footer Socials / Actions */}
@@ -595,9 +586,9 @@ export default function ClientsTab({
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        {cli.password && (
+                        {cli.accessToken && (
                           <span className="text-[8px] bg-zinc-900 border border-white/5 px-1.5 py-0.5 rounded text-zinc-400 font-mono">
-                            Senha: {cli.password}
+                            Token: {cli.accessToken}
                           </span>
                         )}
                         
@@ -614,7 +605,7 @@ export default function ClientsTab({
                             setEditClientLinkedin(cli.linkedin || "");
                             setEditClientAddress(cli.address || "");
                             setEditClientStatus(cli.status || "Ativo");
-                            setEditClientPassword(cli.password || "");
+                            setEditClientPassword(cli.accessToken || "");
                           }}
                           className="text-amber-500 hover:text-amber-400 p-1.5 rounded hover:bg-amber-500/10 transition-colors cursor-pointer"
                           title="Editar"
@@ -656,14 +647,14 @@ export default function ClientsTab({
                         <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-wider font-bold">Acesso Direto do Cliente</span>
                         <div className="bg-white p-2.5 rounded-xl border-2 border-[#C5A059]">
                           <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/?client=" + cli.email)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/?token=" + cli.accessToken)}`} 
                             alt="QR Code" 
                             className="w-32 h-32" 
                           />
                         </div>
                         <span className="text-[9px] text-zinc-400 font-mono text-center px-4 leading-relaxed">
                           Mostre este QR Code para o cliente ler com a câmera do celular.<br/>
-                          O e-mail será preenchido automaticamente.
+                          O login será efetuado automaticamente pelo Token Seguro.
                         </span>
                       </motion.div>
                     )}

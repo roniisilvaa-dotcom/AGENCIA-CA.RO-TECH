@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Sparkles, 
   Lock, 
-  Mail, 
   ArrowRight, 
   Compass, 
   ShieldCheck,
-  AlertCircle,
-  Briefcase
+  AlertCircle
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Client } from "../types";
@@ -18,8 +15,7 @@ interface LoginGateProps {
 }
 
 export default function LoginGate({ onLogin }: LoginGateProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
 
@@ -35,61 +31,54 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
     } catch {
       setClients(INITIAL_CLIENTS);
     }
-
-    // Auto-fill client email from QR Code URL
-    const params = new URLSearchParams(window.location.search);
-    const clientParam = params.get("client");
-    if (clientParam) {
-      setEmail(clientParam);
-    }
   }, []);
+
+  // Safe and immediate auto-login check once URL token parameters and clients database are ready
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get("token");
+    if (tokenParam) {
+      const cleanToken = tokenParam.trim();
+      setToken(cleanToken);
+      if (cleanToken === "CARO-OWNER-0001-RONI") {
+        onLogin("agency", "Agência CA.RO TECH", "agencia@carotech.com");
+      } else {
+        // Resolve immediately from localStorage to prevent sync delay blank pages
+        let currentClients = clients;
+        if (!currentClients || currentClients.length === 0) {
+          try {
+            const saved = localStorage.getItem("caro_clients");
+            if (saved) currentClients = JSON.parse(saved);
+          } catch {}
+        }
+        const matched = (currentClients || []).find(c => c.accessToken === cleanToken);
+        if (matched) {
+          onLogin("client", `Diretoria ${matched.name}`, matched.email);
+        }
+      }
+    }
+  }, [clients]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
+    const cleanToken = token.trim();
 
-    // Check Admin / Agency presets
-    if ((cleanEmail === "admcaro" || cleanEmail === "admcaro@carotech.com" || cleanEmail === "admcaro@caroimage.com" || cleanEmail === "admcaro@caroatelier.com") && cleanPassword === "admcaro") {
-      onLogin("agency", "Admin CA.RO (admcarotech)", "adm@carotech.com");
-      return;
-    } 
-    
-    if ((cleanEmail === "agencia@carotech.com" || cleanEmail === "agencia@caroimage.com" || cleanEmail === "agencia@caroatelier.com") && cleanPassword === "caro2026") {
+    // Check Master Token
+    if (cleanToken === "CARO-OWNER-0001-RONI") {
       onLogin("agency", "Agência CA.RO TECH", "agencia@carotech.com");
       return;
     }
 
-    // Check dynamic clients database
-    const matchedClient = clients.find(c => c.email.toLowerCase() === cleanEmail);
+    // Check dynamic clients database for matching accessToken
+    const matchedClient = clients.find(c => c.accessToken === cleanToken);
     if (matchedClient) {
-      // If password field exists and matches, or if it isn't specified, let them in with default client password or matched password
-      const clientPassword = matchedClient.password || "caro2026";
-      if (cleanPassword === clientPassword) {
-        onLogin("client", `Diretoria ${matchedClient.name}`, matchedClient.email);
-        return;
-      }
+      onLogin("client", `Diretoria ${matchedClient.name}`, matchedClient.email);
+      return;
     }
 
-    setError("Credenciais inválidas. Use os presets de demonstração ou e-mails cadastrados abaixo.");
-  };
-
-  const handleShortcutLogin = (role: "agency" | "admin" | string) => {
-    if (role === "admin") {
-      onLogin("agency", "Admin CA.RO (admcarotech)", "adm@carotech.com");
-    } else if (role === "agency") {
-      onLogin("agency", "Agência CA.RO TECH", "agencia@carotech.com");
-    } else {
-      // Role is email of a dynamic client
-      const matched = clients.find(c => c.email === role);
-      if (matched) {
-        onLogin("client", `Diretoria ${matched.name}`, matched.email);
-      } else {
-        onLogin("client", "Diretoria Mundi TKR", "mundi@tkr.com");
-      }
-    }
+    setError("Token de acesso inválido ou expirado.");
   };
 
   return (
@@ -137,40 +126,23 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
           </div>
 
           <p className="text-xs text-zinc-400 font-light text-center mb-6 leading-relaxed">
-            Seja bem-vindo. Insira suas credenciais seguras para sincronizar atividades do pipeline tecnológico e células produtivas de Barueri.
+            Seja bem-vindo. Insira o seu Token de Acesso Síncrono para sincronizar atividades do pipeline tecnológico.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1.5">E-mail Corporativo</label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
-                  <Mail className="w-4 h-4" />
-                </span>
-                <input
-                  type="text"
-                  required
-                  placeholder="exemplo@carotech.com ou e-mail de cliente"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-xs bg-zinc-950 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:border-[#C5A059] transition-all outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1.5">Senha Exclusiva</label>
+              <label className="block text-[10px] text-zinc-400 uppercase tracking-widest font-tech mb-1.5">Token de Acesso Síncrono</label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
                   <Lock className="w-4 h-4" />
                 </span>
                 <input
-                  type="password"
+                  type="text"
                   required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full text-xs bg-zinc-950 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:border-[#C5A059] transition-all outline-none"
+                  placeholder="Ex: CARO-OWNER-..."
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  className="w-full text-xs bg-zinc-950 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:border-[#C5A059] transition-all outline-none font-mono"
                 />
               </div>
             </div>

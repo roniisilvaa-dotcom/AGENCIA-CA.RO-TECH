@@ -3,6 +3,7 @@ export interface Client {
   name: string;
   email: string;
   password?: string;
+  accessToken?: string;
   tagline: string;
   welcomeMessage?: string;
   reachMultiplier: number;

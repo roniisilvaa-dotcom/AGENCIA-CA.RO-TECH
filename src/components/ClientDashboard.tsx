@@ -1186,7 +1186,7 @@ export default function ClientDashboard({
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Senha Exclusiva</label>
+                      <label className="block text-[9px] text-zinc-400 uppercase tracking-widest font-tech font-bold mb-1">Token de Acesso</label>
                       <div className="relative">
                         <Lock className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                         <input
