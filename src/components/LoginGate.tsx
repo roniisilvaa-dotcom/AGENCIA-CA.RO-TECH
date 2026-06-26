@@ -20,17 +20,26 @@ export default function LoginGate({ onLogin }: LoginGateProps) {
   const [clients, setClients] = useState<Client[]>([]);
 
   useEffect(() => {
+    // Try localStorage first for instant validation
     try {
       const saved = localStorage.getItem("caro_clients");
       if (saved) {
         setClients(JSON.parse(saved));
-      } else {
-        localStorage.setItem("caro_clients", JSON.stringify(INITIAL_CLIENTS));
-        setClients(INITIAL_CLIENTS);
       }
-    } catch {
-      setClients(INITIAL_CLIENTS);
-    }
+    } catch {}
+
+    // Sychronize with Neon DB to get fresh credentials on any device
+    fetch("/api/sync")
+      .then(res => res.json())
+      .then(data => {
+        if (data.clients) {
+          setClients(data.clients);
+          try {
+            localStorage.setItem("caro_clients", JSON.stringify(data.clients));
+          } catch {}
+        }
+      })
+      .catch(err => console.error("Failed to sync clients in LoginGate:", err));
   }, []);
 
   // Safe and immediate auto-login check once URL token parameters and clients database are ready

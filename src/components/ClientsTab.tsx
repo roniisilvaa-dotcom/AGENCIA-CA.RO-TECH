@@ -15,7 +15,8 @@ import {
   Clock,
   Briefcase,
   QrCode,
-  ArrowRight
+  ArrowRight,
+  Copy
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -32,8 +33,16 @@ export default function ClientsTab({
   onDeleteClient,
   onUpdateClient
 }: ClientsTabProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [showQrFor, setShowQrFor] = useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Registration form states
   const [newClientName, setNewClientName] = useState("");
@@ -509,90 +518,47 @@ export default function ClientsTab({
               Nenhum cliente cadastrado no momento.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1">
+            <div className="space-y-4 max-h-[650px] overflow-y-auto pr-1.5 custom-scrollbar">
               {filteredClients.map((cli) => {
+                const accessUrl = `${window.location.origin}/?token=${cli.accessToken}`;
+                const isCopiedToken = copiedId === `token-${cli.id}`;
+                const isCopiedLink = copiedId === `link-${cli.id}`;
+
                 return (
                   <div 
                     key={cli.id}
-                    className="luxury-card p-4 rounded-xl border border-white/5 hover:border-[#C5A059]/20 bg-zinc-900/40 relative space-y-3"
+                    className="luxury-card p-5 rounded-2xl border border-white/5 hover:border-[#C5A059]/25 bg-zinc-950/90 relative space-y-4 transition-all"
                   >
-                    {/* Header: Logo and Info */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center p-1 overflow-hidden shrink-0">
+                    {/* Top Section: Identity & Status/Actions */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-3.5">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center p-1.5 overflow-hidden shrink-0">
                           {cli.logoUrl ? (
                             <img src={cli.logoUrl} alt={cli.name} className="w-full h-full object-contain" />
                           ) : (
-                            <Building2 className="w-5 h-5 text-zinc-650" />
+                            <Building2 className="w-6 h-6 text-zinc-650" />
                           )}
                         </div>
                         <div className="text-left">
-                          <h4 className="font-serif text-sm text-white font-medium truncate max-w-[120px]">{cli.name}</h4>
-                          <span className="text-[9px] text-zinc-500 truncate block max-w-[120px]">{cli.email}</span>
+                          <h4 className="font-serif text-base text-white font-medium">{cli.name}</h4>
+                          <span className="text-[10px] text-zinc-500 font-mono block">{cli.email}</span>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col items-end gap-1.5">
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
                         <button
                           onClick={() => toggleClientStatus(cli)}
-                          className={`text-[8px] px-2 py-0.5 rounded font-tech uppercase tracking-wider border font-bold cursor-pointer transition-all ${
+                          className={`text-[9px] px-2.5 py-1 rounded-lg font-tech uppercase tracking-wider border font-bold cursor-pointer transition-all ${
                             cli.status === "Ativo"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              ? "bg-emerald-500/10 text-emerald-450 border-emerald-500/20"
                               : cli.status === "Suspenso"
                               ? "bg-rose-500/10 text-rose-450 border-rose-500/20"
-                              : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                              : "bg-rose-500/10 text-rose-450 border-rose-500/20"
                           }`}
-                          title="Alternar Ativo/Inativo"
+                          title="Alternar Status"
                         >
                           {cli.status || "Ativo"}
                         </button>
-                      </div>
-                    </div>
-
-                    <div className="text-left space-y-1.5 pt-1">
-                      <div className="text-[10px] text-zinc-400 italic">"{cli.tagline}"</div>
-                      
-                      {cli.cnpj && (
-                        <div className="text-[9px] text-zinc-500 font-mono">
-                          CNPJ: <strong className="text-zinc-300 font-semibold">{cli.cnpj}</strong>
-                        </div>
-                      )}
-                      
-                      {cli.address && (
-                        <div className="text-[9px] text-zinc-500 flex items-start gap-1">
-                          <MapPin className="w-3 h-3 text-[#C5A059] shrink-0 mt-0.5" />
-                          <span className="truncate">{cli.address}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Footer Socials / Actions */}
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {cli.website && (
-                          <a href={cli.website} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-white/5 rounded text-zinc-400 hover:text-white" title={cli.website}>
-                            <Globe className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                        {cli.instagram && (
-                          <a href={`https://instagram.com/${cli.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-white/5 rounded text-zinc-400 hover:text-white" title={cli.instagram}>
-                            <Instagram className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                        {cli.linkedin && (
-                          <a href={`https://linkedin.com/company/${cli.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-1 hover:bg-white/5 rounded text-zinc-400 hover:text-white" title={cli.linkedin}>
-                            <Linkedin className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        {cli.accessToken && (
-                          <span className="text-[8px] bg-zinc-900 border border-white/5 px-1.5 py-0.5 rounded text-zinc-400 font-mono">
-                            Token: {cli.accessToken}
-                          </span>
-                        )}
-                        
                         
                         <button
                           onClick={() => {
@@ -608,19 +574,19 @@ export default function ClientsTab({
                             setEditClientStatus(cli.status || "Ativo");
                             setEditClientPassword(cli.accessToken || "");
                           }}
-                          className="text-amber-500 hover:text-amber-400 p-1.5 rounded hover:bg-amber-500/10 transition-colors cursor-pointer"
+                          className="text-amber-500 hover:text-amber-400 p-2 rounded-lg bg-white/5 border border-white/10 hover:border-amber-500/20 transition-all cursor-pointer"
                           title="Editar"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
-                        
+
                         <button
                           onClick={() => {
                             if (confirm(`Tem certeza que deseja excluir o cliente "${cli.name}"?`)) {
                               onDeleteClient(cli.id);
                             }
                           }}
-                          className="text-rose-400 hover:text-rose-350 p-1.5 rounded hover:bg-rose-500/10 transition-colors cursor-pointer"
+                          className="text-rose-400 hover:text-rose-350 p-2 rounded-lg bg-white/5 border border-white/10 hover:border-rose-500/20 transition-all cursor-pointer"
                           title="Excluir"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -628,17 +594,92 @@ export default function ClientsTab({
                       </div>
                     </div>
 
-                    {/* BIG QR CODE BUTTON */}
-                    <div className="pt-2">
+                    {/* Middle Section: Slogan & Professional Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left text-xs text-zinc-350">
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] uppercase font-tech tracking-wider text-zinc-500">Slogan Estratégico</div>
+                        <div className="italic text-zinc-300 font-serif">"{cli.tagline}"</div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] uppercase font-tech tracking-wider text-zinc-500">Detalhes Comerciais</div>
+                        {cli.cnpj && (
+                          <div className="text-[11px] text-zinc-400 font-mono">
+                            CNPJ: <strong className="text-zinc-300">{cli.cnpj}</strong>
+                          </div>
+                        )}
+                        {cli.address && (
+                          <div className="text-[11px] text-zinc-450 flex items-start gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-[#C5A059] shrink-0 mt-0.5" />
+                            <span className="line-clamp-2 leading-relaxed">{cli.address}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Credentials and Copy Buttons */}
+                    {cli.accessToken && (
+                      <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-3.5 space-y-2.5 text-left">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-white/5 pb-2.5">
+                          <div className="space-y-1">
+                            <span className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Token de Acesso</span>
+                            <div className="font-mono text-xs text-[#E5D1B0] font-bold select-all tracking-wider">{cli.accessToken}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(cli.accessToken!, `token-${cli.id}`)}
+                            className="inline-flex items-center gap-1.5 text-[9px] font-tech font-bold uppercase tracking-wider px-3 py-1.5 rounded bg-zinc-900 border border-white/10 hover:border-[#C5A059] text-zinc-450 hover:text-white cursor-pointer transition-all self-start sm:self-center"
+                          >
+                            <Copy className="w-3 h-3 text-[#C5A059]" /> {isCopiedToken ? "Copiado!" : "Copiar Token"}
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                          <div className="space-y-1 overflow-hidden">
+                            <span className="text-[9px] uppercase font-tech text-zinc-500 tracking-wider">Link de Acesso Direto</span>
+                            <div className="font-mono text-[10px] text-zinc-450 truncate max-w-xs md:max-w-md" title={accessUrl}>{accessUrl}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(accessUrl, `link-${cli.id}`)}
+                            className="inline-flex items-center gap-1.5 text-[9px] font-tech font-bold uppercase tracking-wider px-3 py-1.5 rounded bg-zinc-900 border border-white/10 hover:border-[#C5A059] text-zinc-450 hover:text-white cursor-pointer transition-all self-start sm:self-center shrink-0"
+                          >
+                            <Copy className="w-3 h-3 text-[#C5A059]" /> {isCopiedLink ? "Copiado!" : "Copiar Link"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bottom row: Socials & QR code action */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                      <div className="flex items-center gap-2.5">
+                        {cli.website && (
+                          <a href={cli.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors" title={cli.website}>
+                            <Globe className="w-4 h-4" />
+                          </a>
+                        )}
+                        {cli.instagram && (
+                          <a href={`https://instagram.com/${cli.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors" title={cli.instagram}>
+                            <Instagram className="w-4 h-4" />
+                          </a>
+                        )}
+                        {cli.linkedin && (
+                          <a href={`https://linkedin.com/company/${cli.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-zinc-400 hover:text-white transition-colors" title={cli.linkedin}>
+                            <Linkedin className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+
                       <button
                         onClick={() => setShowQrFor(showQrFor === cli.id ? null : cli.id)}
-                        className="w-full py-2.5 bg-emerald-600/20 border border-emerald-500/30 hover:bg-emerald-500/30 text-emerald-400 font-bold select-none text-[10px] font-tech uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                        className="py-2 px-4 border border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-450 hover:text-emerald-450 font-bold select-none text-[9px] font-tech uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer self-stretch sm:self-auto"
                       >
-                        <QrCode className="w-4 h-4" /> 
-                        {showQrFor === cli.id ? "Esconder QR Code" : "Gerar QR Code de Acesso (Login)"}
+                        <QrCode className="w-3.5 h-3.5" /> 
+                        {showQrFor === cli.id ? "Esconder QR Code" : "QR Code de Login"}
                       </button>
                     </div>
 
+                    {/* QR Code expansion */}
                     {showQrFor === cli.id && (
                       <motion.div 
                         initial={{ opacity: 0, height: 0 }}
@@ -646,16 +687,15 @@ export default function ClientsTab({
                         className="border-t border-white/5 pt-4 pb-2 flex flex-col items-center justify-center space-y-3"
                       >
                         <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-wider font-bold">Acesso Direto do Cliente</span>
-                        <div className="bg-white p-2.5 rounded-xl border-2 border-[#C5A059]">
+                        <div className="bg-white p-2.5 rounded-2xl border-2 border-[#C5A059]">
                           <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/?token=" + cli.accessToken)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(accessUrl)}`} 
                             alt="QR Code" 
                             className="w-32 h-32" 
                           />
                         </div>
                         <span className="text-[9px] text-zinc-400 font-mono text-center px-4 leading-relaxed">
-                          Mostre este QR Code para o cliente ler com a câmera do celular.<br/>
-                          O login será efetuado automaticamente pelo Token Seguro.
+                          O cliente pode ler este QR Code com a câmera do celular para efetuar login automaticamente.
                         </span>
                       </motion.div>
                     )}
