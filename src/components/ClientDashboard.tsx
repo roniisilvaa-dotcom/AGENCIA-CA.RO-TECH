@@ -91,6 +91,74 @@ export default function ClientDashboard({
 
   // Direct Message states
   const [directMsgText, setDirectMsgText] = useState("");
+
+  // Portal AI Client Chat States
+  const [aiChatMessages, setAiChatMessages] = useState<{ id: string; role: "user" | "model"; text: string; timestamp: string }[]>([]);
+  const [aiInputText, setAiInputText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  useEffect(() => {
+    setAiChatMessages([
+      {
+        id: `ai-init-${Date.now()}`,
+        role: "model",
+        text: `Olá! Sou a **CA.RO TECH - ${clientObj.name.toUpperCase()}**, sua inteligência artificial analítica integrada. Estou pronta para tirar dúvidas sobre o andamento dos seus projetos, detalhar cronogramas ou dar insights sobre suas métricas corporativas de marca.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      }
+    ]);
+  }, [clientObj.name]);
+
+  const handleSendAiMsg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiInputText.trim() || aiLoading) return;
+
+    const userMsg = {
+      id: `msg-${Date.now()}`,
+      role: "user" as const,
+      text: aiInputText,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    };
+
+    const nextHistory = [...aiChatMessages, userMsg];
+    setAiChatMessages(nextHistory);
+    setAiInputText("");
+    setAiLoading(true);
+
+    try {
+      const response = await fetch("/api/client-ai-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName: clientObj.name,
+          message: aiInputText,
+          history: nextHistory.slice(0, -1).map(h => ({ role: h.role, text: h.text })),
+          activeProjects: clientProjects
+        })
+      });
+
+      if (!response.ok) throw new Error("Erro na rede.");
+
+      const data = await response.json();
+      const aiMsg = {
+        id: `ai-${Date.now()}`,
+        role: "model" as const,
+        text: data.text || "Entendi sua solicitação. Seus projetos estão alinhados em nosso portal.",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setAiChatMessages([...nextHistory, aiMsg]);
+    } catch (err) {
+      console.error("AI client chat error:", err);
+      const aiMsg = {
+        id: `ai-${Date.now()}`,
+        role: "model" as const,
+        text: "Desculpe, tive um contratempo de conexão. Seus projetos continuam progredindo perfeitamente no pipeline.",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      };
+      setAiChatMessages([...nextHistory, aiMsg]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
   
   // Meeting request states
   const [showMeetingModal, setShowMeetingModal] = useState(false);
@@ -1134,6 +1202,124 @@ export default function ClientDashboard({
             <div className="p-3 bg-zinc-950/40 border border-[#C5A059]/10 rounded-xl text-[10px] text-zinc-500 leading-normal">
               <span className="block font-semibold text-[#E5D1B0] mb-0.5">💡 Suporte Técnico Síncrono</span>
               Suas considerações são avaliadas diretamente por nossos diretores em Barueri. Todas as interações contam com logs persistidos para fins de compliance.
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 9. PORTAL DE INTELIGÊNCIA ARTIFICIAL - CA.RO TECH - [NOME DO CLIENTE] */}
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="luxury-card p-5 md:p-6 rounded-2xl border border-white/10 bg-[#0C0C0C] relative overflow-hidden"
+      >
+        <div className="absolute inset-0 geo-grid opacity-10 pointer-events-none" />
+        <div className="relative z-10 flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+          <div className="flex items-center gap-2.5 text-left">
+            <div className="p-2 bg-[#C5A059]/10 border border-[#C5A059]/20 rounded-xl text-[#C5A059]">
+              <Sparkles className="w-5 h-5 animate-pulse text-[#C5A059]" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg text-white">CA.RO TECH - {clientObj.name.toUpperCase()}</h3>
+              <p className="text-[10px] text-zinc-400">Assessoria Estratégica Digital & Análise de Métricas por Inteligência Artificial</p>
+            </div>
+          </div>
+          <span className="text-[9px] font-tech text-[#C5A059] tracking-widest bg-[#C5A059]/10 border border-[#C5A059]/20 px-2.5 py-0.5 rounded uppercase font-semibold">
+            I.A de Suporte Síncrona
+          </span>
+        </div>
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 text-left">
+          {/* Chat Feed */}
+          <div className="lg:col-span-8 flex flex-col justify-between bg-zinc-950/60 rounded-xl border border-white/5 p-4 min-h-[280px] max-h-[360px] overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-3.5 pr-2 mb-4 scrollbar-thin scrollbar-thumb-zinc-855 select-text">
+              {aiChatMessages.map((msg) => {
+                const isModel = msg.role === "model";
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex flex-col ${isModel ? "items-start" : "items-end"}`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1 text-[9px] text-zinc-500 font-tech">
+                      <span className={isModel ? "text-[#C5A059] font-semibold" : "text-zinc-300 font-semibold"}>
+                        {isModel ? `CA.RO TECH - ${clientObj.name.toUpperCase()}` : currentUser.name}
+                      </span>
+                      <span>•</span>
+                      <span>{msg.timestamp}</span>
+                    </div>
+                    <div
+                      className={`max-w-[85%] text-xs py-2 px-3.5 rounded-2xl leading-relaxed whitespace-pre-line ${
+                        isModel
+                          ? "bg-zinc-900 border border-white/10 text-white rounded-tl-none font-sans"
+                          : "bg-[#C5A059]/15 border border-[#C5A059]/20 text-[#E5D1B0] rounded-tr-none font-sans"
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                );
+              })}
+              {aiLoading && (
+                <div className="flex flex-col items-start">
+                  <div className="flex items-center gap-1.5 mb-1 text-[9px] text-zinc-500 font-tech">
+                    <span className="text-[#C5A059] font-semibold">CA.RO TECH - {clientObj.name.toUpperCase()}</span>
+                    <span>•</span>
+                    <span>Digitando...</span>
+                  </div>
+                  <div className="bg-zinc-900 border border-white/10 text-zinc-400 text-xs py-2 px-3.5 rounded-2xl rounded-tl-none font-mono">
+                    Analisando banco de dados de marketing...
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleSendAiMsg} className="flex gap-2">
+              <input
+                type="text"
+                required
+                value={aiInputText}
+                onChange={(e) => setAiInputText(e.target.value)}
+                placeholder={`Pergunte sobre seus projetos ou métricas para a CA.RO TECH - ${clientObj.name.toUpperCase()}...`}
+                className="flex-1 bg-zinc-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#C5A059] placeholder-zinc-550 select-text font-sans"
+              />
+              <button
+                type="submit"
+                disabled={aiLoading}
+                className="p-2.5 bg-[#C5A059] hover:bg-[#E5D1B0] text-zinc-950 font-bold rounded-xl transition-all hover:scale-[1.02] cursor-pointer disabled:opacity-50"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+
+          {/* Suggested Questions */}
+          <div className="lg:col-span-4 flex flex-col bg-zinc-900/30 rounded-xl border border-white/5 p-4 text-xs font-light space-y-3 justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] text-[#C5A059] font-tech uppercase tracking-widest font-bold block">Consultas Rápidas Sugeridas</span>
+              <p className="text-[10px] text-zinc-450 leading-relaxed">Clique em uma das dúvidas comuns abaixo para iniciar a consultoria automática:</p>
+              <div className="space-y-2 pt-1">
+                {[
+                  "Quais projetos da minha marca estão ativos?",
+                  "Qual o status atual das minhas entregas?",
+                  "Como estão as métricas de performance?"
+                ].map((q, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setAiInputText(q);
+                    }}
+                    className="w-full p-2.5 text-left bg-zinc-950/40 hover:bg-[#C5A059]/10 border border-white/5 hover:border-[#C5A059]/30 rounded-lg text-[10px] text-zinc-350 hover:text-white transition-all cursor-pointer truncate"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-3 bg-zinc-950/40 border border-[#C5A059]/10 rounded-xl text-[10px] text-zinc-500 leading-normal">
+              <span className="block font-semibold text-[#E5D1B0] mb-0.5">💡 Respostas Baseadas em Dados</span>
+              Esta inteligência artificial lê em tempo real os status na mesa Kanban e nos relatórios de desempenho aprovados pela diretoria.
             </div>
           </div>
         </div>

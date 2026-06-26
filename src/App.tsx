@@ -255,7 +255,7 @@ export default function App() {
     { id: "reunioes", label: "Histórico de Reuniões", icon: Users },
     { id: "projetos", label: "Mesa Kanban & Status", icon: Layers },
     { id: "portal-ai", label: "Portal I.A Oracle", icon: Sparkles },
-    { id: "aprovacoes", label: "Aprovações (Mundis)", icon: CheckSquare },
+    { id: "aprovacoes", label: "Aprovações de Clientes", icon: CheckSquare },
     { id: "publicacoes", label: "Publicações", icon: FileCheck2 },
     { id: "resultados", label: "Métricas & Relatórios", icon: TrendingUp },
     { id: "pendencias", label: "Pendências Cliente", icon: AlertTriangle, badge: pendings.length },
@@ -309,7 +309,16 @@ export default function App() {
       case "projetos":
         return <ProjectsTab projects={projects} onAddProject={handleAddProject} onUpdateProject={handleUpdateProject} currentUser={currentUser} clients={clients} />;
       case "portal-ai":
-        return <PortalAiTab projects={projects} currentUser={currentUser} />;
+        return (
+          <PortalAiTab
+            projects={projects}
+            currentUser={currentUser}
+            clientsList={clients}
+            onAddClient={handleAddClient}
+            onDeleteClient={handleDeleteClient}
+            onUpdateClient={handleUpdateClient}
+          />
+        );
       case "aprovacoes":
         return <ApprovalsTab approvals={approvals} onUpdateApproval={handleUpdateApproval} currentUser={currentUser} />;
       case "publicacoes":

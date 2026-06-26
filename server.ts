@@ -319,12 +319,74 @@ app.post("/api/client-ai-chat", async (req, res) => {
 
     const ai = getAi();
     
-    // Inject current project context into system dynamic instructions
-    const systemInstruction = `Você é a CA.RO TECH IA, assistente virtual analítica da boutique de alta costura digital e tecnologia CA.RO TECH (Alphaville / Munique / caroimage.com).
-Você é sofisticado, prestativo, preciso e elegante. Você fala português brasileiro de alta estirpe técnica e estética.
-Você está atendendo o cliente específico: [${clientName}].
+    // Inject system dynamic instructions depending on channel access (Sovereign Agency Admin vs Isolated Client)
+    let systemInstruction = "";
+    if (clientName === "Diretoria") {
+      systemInstruction = `Você é a CA.RO TECH - IA, inteligência artificial soberana que gerencia o ecossistema da CA.RO TECH.
+Você fala português brasileiro técnico e elegante.
+Você tem poder de administração completo sobre a base de clientes do sistema.
+Se o usuário solicitar ações administrativas como cadastrar, cadastrar cliente, excluir cliente ou editar cliente, você DEVE processar a solicitação e preencher a propriedade "action" do JSON de resposta.
 
-Aqui estão os DADOS REAIS e ATIVOS dos projetos e performance de [${clientName}] no nosso atelier:
+Formatos de Ação que você deve preencher:
+1. Para Cadastrar um cliente:
+{
+  "text": "Cadastrando a empresa [Nome] no ecossistema...",
+  "action": {
+    "type": "ADD_CLIENT",
+    "payload": {
+      "name": "Nome da Empresa",
+      "email": "email@login.com",
+      "tagline": "Slogan de marca",
+      "cnpj": "99.999.999/0001-99",
+      "address": "Endereço comercial",
+      "logoUrl": "",
+      "website": "https://...",
+      "instagram": "@usuario",
+      "linkedin": "empresa",
+      "status": "Ativo"
+    }
+  }
+}
+
+2. Para Atualizar um cliente:
+{
+  "text": "Atualizando dados da empresa...",
+  "action": {
+    "type": "UPDATE_CLIENT",
+    "payload": {
+      "email": "email@do-cliente.com",
+      "name": "Novo Nome ou o mesmo se não alterou",
+      "tagline": "Novo slogan",
+      "cnpj": "Novo CNPJ",
+      "address": "Novo endereço",
+      "logoUrl": "Nova URL do logo",
+      "website": "Novo site",
+      "instagram": "Novo instagram",
+      "linkedin": "Novo linkedin",
+      "status": "Novo status (Ativo/Inativo/Suspenso)"
+    }
+  }
+}
+
+3. Para Excluir um cliente (use apenas o email como chave para deletar):
+{
+  "text": "Removendo registro do cliente do banco de dados...",
+  "action": {
+    "type": "DELETE_CLIENT",
+    "payload": {
+      "email": "email-do-cliente-para-deletar@login.com"
+    }
+  }
+}
+
+Se for uma pergunta normal, apenas preencha "text" e coloque "action": {"type": "NONE"}.`;
+    } else {
+      systemInstruction = `Você é a CA.RO TECH IA, assistente virtual analítica integrada para a diretoria da marca [${clientName}].
+Você é elegante, prestativo e sofisticado. Você fala português brasileiro de alta estirpe técnica e estética.
+Você está atendendo o cliente específico: [${clientName}] e a sua interface é denominada "CA.RO TECH - ${clientName.toUpperCase()}".
+Você só responde e fala sobre dados relativos a [${clientName}]. Nunca mencione projetos ou dados de outros clientes.
+
+Aqui estão os DADOS REAIS e ATIVOS de [${clientName}] no nosso atelier:
 - Projetos Ativos:
 ${localClientProjects.map((p: any) => `  * "${p.name}" (Status: ${p.status}, Progresso atual: ${p.progress}%)${p.lastUpdate ? ` - Última atualização: ${p.lastUpdate}` : ""}`).join("\n")}
 
@@ -336,7 +398,15 @@ ${localClientProjects.map((p: any) => `  * "${p.name}" (Status: ${p.status}, Pro
   * Leads Gerados: ${localMetrics.leads}
   * Oportunidades Reais de Negócio: ${localMetrics.opportunities}
 
-Responda dúvidas sobre esses projetos, dê insights baseados nesses números operacionais e explique os próximos passos cromáticos ou de desenvolvimento de forma inteligente e personalizada para o cliente [${clientName}]. Use formatação Markdown (negrito, marcadores, etc) para manter as respostas extremamente legíveis e luxuosas. Mantenha as respostas focadas nos dados.`;
+Responda dúvidas sobre esses projetos, dê insights baseados nesses números operacionais e explique os próximos passos cromáticos ou de desenvolvimento de forma inteligente e personalizada para o cliente [${clientName}].
+Você deve preencher a resposta estruturada no JSON:
+{
+  "text": "Sua resposta formatada em Markdown aqui",
+  "action": {
+    "type": "NONE"
+  }
+}`;
+    }
 
     // Map user history into GoogleGenAI content components
     const contents: any[] = [];
@@ -360,10 +430,44 @@ Responda dúvidas sobre esses projetos, dê insights baseados nesses números op
       config: {
         systemInstruction: systemInstruction,
         temperature: 0.7,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            text: { type: Type.STRING },
+            action: {
+              type: Type.OBJECT,
+              properties: {
+                type: { type: Type.STRING },
+                payload: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    name: { type: Type.STRING },
+                    email: { type: Type.STRING },
+                    tagline: { type: Type.STRING },
+                    cnpj: { type: Type.STRING },
+                    logoUrl: { type: Type.STRING },
+                    website: { type: Type.STRING },
+                    instagram: { type: Type.STRING },
+                    linkedin: { type: Type.STRING },
+                    address: { type: Type.STRING },
+                    status: { type: Type.STRING }
+                  }
+                }
+              }
+            }
+          },
+          required: ["text"]
+        }
       }
     });
 
-    res.json({ text: response.text });
+    const result = JSON.parse(response.text?.trim() || "{}");
+    res.json({
+      text: result.text || "",
+      action: result.action || { type: "NONE" }
+    });
   } catch (error: any) {
     console.warn("Fallback local ativado para chat I.A (Chave ausente, limite ou erro):", error.message);
     
@@ -389,19 +493,22 @@ Responda dúvidas sobre esses projetos, dê insights baseados nesses números op
     }
 
     if (msgLower.includes("projeto") || msgLower.includes("andamento") || msgLower.includes("progresso") || msgLower.includes("status")) {
-      fallbackText = `### Análise do Portfólio de Projetos - **${clientName}**\n\nNossa célula de desenvolvimento em Alphaville e pós-produção na Europa mapeou as seguintes frentes para a sua marca:\n\n` +
+      fallbackText = `### Análise do Portfólio de Projetos - **${clientName}**\n\nNossa célula de desenvolvimento e pós-produção mapeou as seguintes frentes para a sua marca:\n\n` +
         localClientProjects.map((p: any) => {
           return `- **${p.name}**:\n  - *Pipeline*: \`${p.status}\`\n  - *Conclusão*: **${p.progress}%**\n  - *Direção*: Soluções visuais de alta fidelidade e engenharia conectada. Alinhados com os prazos de entrega acordados.`;
         }).join("\n\n") + `\n\n*Quer que eu detalhe o plano de ação de alguma dessas frentes ou aplique um ajuste de prioridade?*`;
     } else if (msgLower.includes("metrica") || msgLower.includes("resultado") || msgLower.includes("engajamento") || msgLower.includes("lead") || msgLower.includes("alcance")) {
-      fallbackText = `### Relatório de Performance e Impacto Tecnológico\n\nOs resultados mais recentes do ecossistema conectado de **${clientName}** indicam excelente conversão:\n\n- **Contatos Qualificados (Leads)**: Alta densidade de conversão no público de alta renda.\n- **Engajamento**: Ótima taxa média, impulsionada pelas postagens estéticas autorais de alta costura digital.\n- **Taxa de Oportunidades**: Excelente aproveitamento comercial.\n\n*Recomendamos manter o investimento na estética do Lightroom nobre para os próximos teasers para potencializar a sofisticação da marca.*`;
+      fallbackText = `### Relatório de Performance e Impacto Tecnológico\n\nOs resultados mais recentes do ecossistema conectado de **${clientName}** indicam excelente conversão:\n\n- **Contatos Qualificados (Leads)**: Alta densidade de conversão no público de alta renda.\n- **Engajamento**: Ótima taxa média, impulsionada pelas postagens estéticas autorais de design estratégico.\n- **Taxa de Oportunidades**: Excelente aproveitamento comercial.\n\n*Recomendamos manter o investimento na estética do Lightroom nobre para os próximos teasers para potencializar a sofisticação da marca.*`;
     } else if (msgLower.includes("ajuda") || msgLower.includes("como funciona") || msgLower.includes("quem é você") || msgLower.includes("ola")) {
       fallbackText = `Olá! Sou a **CA.RO TECH IA**, sua assessora estratégica exclusiva no atelier. \n\nPosso ajudar você a:\n\n1. **Acompanhar os seus Projetos ativos** (Diga: *"Quais projetos estão em andamento?"*)\n2. **Consultar suas Métricas de Performance** (Diga: *"Como estão nossos resultados?"*)\n3. **Sanar Dúvidas sobre o fluxo de aprovação de peças** (Diga: *"Qual o status das peças em revisão?"*)\n\n*Estou pronto. O que deseja consultar hoje?*`;
     } else {
-      fallbackText = `### Atendimento Estratégico CA.RO TECH\n\nEntendi sua solicitação sobre o ecossistema de **${clientName}**. \n\nNossa célula criativa de Alphaville está integrada com nossos servidores europeus para garantir que todas as entregas estejam no padrão luxuoso de **caroimage.com**.\n\n**Pontos Importantes de Discussão:**\n- Todos os projetos estão progredindo no pipeline em tempo ideal.\n- O feedback e as notas das atas são documentados em tempo real no seu painel principal.\n\nSe precisar de detalhes específicos sobre artes pendentes ou queira agendar uma conferência de alinhamento inteligente, me avise!`;
+      fallbackText = `### Atendimento Estratégico CA.RO TECH\n\nEntendi sua solicitação sobre o ecossistema de **${clientName}**. \n\nNossa célula criativa está integrada com nossos servidores para garantir que todas as entregas estejam no padrão de excelência da **CA.RO TECH**.\n\n**Pontos Importantes de Discussão:**\n- Todos os projetos estão progredindo no pipeline em tempo ideal.\n- O feedback e as notas das atas são documentados em tempo real no seu painel principal.\n\nSe precisar de detalhes específicos sobre artes pendentes ou queira agendar uma conferência de alinhamento inteligente, me avise!`;
     }
 
-    res.json({ text: fallbackText });
+    res.json({
+      text: fallbackText,
+      action: { type: "NONE" }
+    });
   }
 });
 

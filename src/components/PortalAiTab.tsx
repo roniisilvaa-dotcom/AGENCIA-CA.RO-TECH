@@ -23,6 +23,10 @@ interface PortalAiTabProps {
     name: string;
     email: string;
   } | null;
+  clientsList?: Client[];
+  onAddClient?: (client: Client) => void;
+  onDeleteClient?: (clientId: string) => void;
+  onUpdateClient?: (client: Client) => void;
 }
 
 interface Message {
@@ -34,15 +38,22 @@ interface Message {
 
 interface DynamicChannel {
   id: string;
-  name: string; // Dynamic AI Display Name: CA.RO - [NAME] (e.g., CA.RO - Mundi TKR)
-  clientName: string; // The pure corporate name
+  name: string;
+  clientName: string;
   tagline: string;
   unlockedForClientEmail: string;
   initialWelcome: string;
   suggestedQuestions: string[];
 }
 
-export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps) {
+export default function PortalAiTab({ 
+  projects, 
+  currentUser,
+  clientsList,
+  onAddClient,
+  onDeleteClient,
+  onUpdateClient
+}: PortalAiTabProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [activeChannelId, setActiveChannelId] = useState<string>("");
   const [inputMessage, setInputMessage] = useState<string>("");
@@ -53,56 +64,77 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
   const [chatHistories, setChatHistories] = useState<Record<string, Message[]>>({});
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Load clients dynamic list from localStorage or INITIAL_CLIENTS fallback
+  // Load clients list
   useEffect(() => {
-    let loadedClients: Client[] = [];
-    try {
-      const saved = localStorage.getItem("caro_clients");
-      if (saved) {
-        loadedClients = JSON.parse(saved);
-      } else {
+    if (clientsList && clientsList.length > 0) {
+      setClients(clientsList);
+      if (currentUser) {
+        if (currentUser.role === "client") {
+          const matched = clientsList.find(c => c.email.toLowerCase() === currentUser.email.toLowerCase());
+          setActiveChannelId(matched ? matched.id : clientsList[0]?.id || "");
+        } else {
+          setActiveChannelId("agency-global");
+        }
+      }
+    } else {
+      let loadedClients: Client[] = [];
+      try {
+        const saved = localStorage.getItem("caro_clients");
+        if (saved) {
+          loadedClients = JSON.parse(saved);
+        } else {
+          loadedClients = INITIAL_CLIENTS;
+        }
+      } catch {
         loadedClients = INITIAL_CLIENTS;
       }
-    } catch {
-      loadedClients = INITIAL_CLIENTS;
-    }
-    setClients(loadedClients);
+      setClients(loadedClients);
 
-    // Filter or default active channel ID based on current logger
-    if (currentUser) {
-      if (currentUser.role === "client") {
-        const matched = loadedClients.find(c => c.email.toLowerCase() === currentUser.email.toLowerCase());
-        if (matched) {
-          setActiveChannelId(matched.id);
+      if (currentUser) {
+        if (currentUser.role === "client") {
+          const matched = loadedClients.find(c => c.email.toLowerCase() === currentUser.email.toLowerCase());
+          setActiveChannelId(matched ? matched.id : loadedClients[0]?.id || "");
         } else {
-          setActiveChannelId(loadedClients[0]?.id || "");
+          setActiveChannelId("agency-global");
         }
-      } else {
-        setActiveChannelId(loadedClients[0]?.id || "");
       }
     }
-  }, [currentUser]);
+  }, [currentUser, clientsList]);
 
-  // Map dynamic clients to Dynamic AI channels representation
-  const dynamicChannels: DynamicChannel[] = clients.map(cli => {
-    const aiBrandName = "CA.RO TECH IA"; // NOME DA IA CA.RO TECH IA
-    
-    // Custom strategic suggested questions
-    const suggested: string[] = [
-      `Quais projetos da ${cli.name} estão ativos?`,
-      `Qual o status atual do que temos programado?`,
-      `Que peças ou postagens temos prontas ou pendentes?`
-    ];
+  // Map dynamic channels
+  const dynamicChannels: DynamicChannel[] = [];
+  
+  if (currentUser?.role === "agency") {
+    dynamicChannels.push({
+      id: "agency-global",
+      name: "CA.RO TECH - IA",
+      clientName: "Diretoria",
+      tagline: "Painel de Controle Autónomo por I.A",
+      unlockedForClientEmail: "agencia@carotech.com",
+      initialWelcome: "Olá, Diretor. Sou a **CA.RO TECH - IA**. Tenho controle sovereign sobre o sistema. Posso cadastrar novos clientes, editar slogan/CNPJ/redes, excluir cadastros e responder relatórios operacionais. O que deseja executar?",
+      suggestedQuestions: [
+        "Cadastrar cliente XPTO, e-mail: xpto@teste.com, tagline: Conceito Novo",
+        "Listar todos os clientes cadastrados",
+        "Excluir o cliente com e-mail antigo"
+      ]
+    });
+  }
 
-    return {
+  clients.forEach(cli => {
+    const aiBrandName = "CA.RO TECH IA";
+    dynamicChannels.push({
       id: cli.id,
-      name: `${aiBrandName} - ${cli.name}`,
+      name: `CA.RO TECH - ${cli.name.toUpperCase()}`,
       clientName: cli.name,
       tagline: cli.tagline,
       unlockedForClientEmail: cli.email,
-      initialWelcome: `Olá! Sou o assessor inteligente integrado **${aiBrandName}** do CA.RO ATELIER. Posso responder qualquer dúvida operacional, listar o andamento real do que está sendo feito e detalhar o cronograma programado de marketing de altíssimo padrão.`,
-      suggestedQuestions: suggested
-    };
+      initialWelcome: `Olá! Sou a assistente inteligente **CA.RO TECH - ${cli.name.toUpperCase()}** no portal. Estou pronta para analisar os números operacionais, status de projetos ativos e dar insights sobre as entregas da sua marca.`,
+      suggestedQuestions: [
+        `Quais projetos da ${cli.name} estão ativos?`,
+        `Qual o status atual do que temos programado?`,
+        `Que peças ou postagens temos prontas ou pendentes?`
+      ]
+    });
   });
 
   const activeChannel = dynamicChannels.find(c => c.id === activeChannelId) || dynamicChannels[0];
@@ -189,6 +221,70 @@ export default function PortalAiTab({ projects, currentUser }: PortalAiTabProps)
       }
 
       const data = await response.json();
+      
+      // Intercept sovereign administrative actions returned by the AI
+      if (data.action && data.action.type !== "NONE") {
+        const { type, payload } = data.action;
+        if (type === "ADD_CLIENT" && onAddClient) {
+          // Generate client ID and token
+          const cleanName = (payload.name || "CLIENT")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toUpperCase()
+            .substring(0, 5);
+          const randSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          const generatedToken = `CARO-CLI-${cleanName}-${randSuffix}`;
+
+          const newCli: Client = {
+            id: `cli-${Date.now()}`,
+            name: payload.name || "Novo Cliente",
+            email: payload.email || `cliente-${Date.now()}@carotech.com`,
+            accessToken: generatedToken,
+            tagline: payload.tagline || "Parceiro CA.RO TECH",
+            welcomeMessage: "Bem-vindo ao seu painel digital síncrono.",
+            reachMultiplier: 1.0,
+            cnpj: payload.cnpj || "",
+            logoUrl: payload.logoUrl || "",
+            website: payload.website || "",
+            instagram: payload.instagram || "",
+            linkedin: payload.linkedin || "",
+            address: payload.address || "",
+            status: payload.status || "Ativo"
+          };
+          onAddClient(newCli);
+          data.text += `\n\n✅ **Ação Executada**: Cliente **${newCli.name}** cadastrado com sucesso! E-mail de acesso: \`${newCli.email}\`, Token: \`${newCli.accessToken}\`.`;
+        } else if (type === "DELETE_CLIENT" && onDeleteClient && clients) {
+          const matched = clients.find(c => c.email.toLowerCase() === payload.email.toLowerCase());
+          if (matched) {
+            onDeleteClient(matched.id);
+            data.text += `\n\n✅ **Ação Executada**: Cliente **${matched.name}** removido com sucesso.`;
+          } else {
+            data.text += `\n\n❌ **Erro na Ação**: Não encontrei nenhum cliente cadastrado com o e-mail \`${payload.email}\`.`;
+          }
+        } else if (type === "UPDATE_CLIENT" && onUpdateClient && clients) {
+          const matched = clients.find(c => c.email.toLowerCase() === payload.email.toLowerCase());
+          if (matched) {
+            const updated: Client = {
+              ...matched,
+              name: payload.name || matched.name,
+              tagline: payload.tagline || matched.tagline,
+              cnpj: payload.cnpj || matched.cnpj,
+              logoUrl: payload.logoUrl || matched.logoUrl,
+              website: payload.website || matched.website,
+              instagram: payload.instagram || matched.instagram,
+              linkedin: payload.linkedin || matched.linkedin,
+              address: payload.address || matched.address,
+              status: payload.status || matched.status
+            };
+            onUpdateClient(updated);
+            data.text += `\n\n✅ **Ação Executada**: Cadastro de **${updated.name}** atualizado com sucesso.`;
+          } else {
+            data.text += `\n\n❌ **Erro na Ação**: Não encontrei nenhum cliente cadastrado com o e-mail \`${payload.email}\`.`;
+          }
+        }
+      }
+
       const aiMsg: Message = {
         id: "ai-" + Date.now(),
         role: "model",
