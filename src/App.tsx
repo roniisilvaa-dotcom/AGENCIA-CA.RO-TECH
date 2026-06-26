@@ -114,14 +114,38 @@ export default function App() {
     fetch("/api/sync")
       .then(res => res.json())
       .then(data => {
-        if (data.clients) setClients(data.clients);
-        if (data.projects) setProjects(data.projects);
-        if (data.meetings) setMeetings(data.meetings);
-        if (data.approvals) setApprovals(data.approvals);
-        if (data.clientMessages) setClientMessages(data.clientMessages);
-        if (data.publications) setPublications(data.publications);
-        if (data.pendings) setPendings(data.pendings);
-        if (data.reports) setReports(data.reports);
+        if (data.clients) {
+          setClients(data.clients);
+          localStorage.setItem("caro_clients", JSON.stringify(data.clients));
+        }
+        if (data.projects) {
+          setProjects(data.projects);
+          localStorage.setItem("caro_projects", JSON.stringify(data.projects));
+        }
+        if (data.meetings) {
+          setMeetings(data.meetings);
+          localStorage.setItem("caro_meetings", JSON.stringify(data.meetings));
+        }
+        if (data.approvals) {
+          setApprovals(data.approvals);
+          localStorage.setItem("caro_approvals", JSON.stringify(data.approvals));
+        }
+        if (data.clientMessages) {
+          setClientMessages(data.clientMessages);
+          localStorage.setItem("caro_client_messages", JSON.stringify(data.clientMessages));
+        }
+        if (data.publications) {
+          setPublications(data.publications);
+          localStorage.setItem("caro_publications", JSON.stringify(data.publications));
+        }
+        if (data.pendings) {
+          setPendings(data.pendings);
+          localStorage.setItem("caro_pendings", JSON.stringify(data.pendings));
+        }
+        if (data.reports) {
+          setReports(data.reports);
+          localStorage.setItem("caro_reports", JSON.stringify(data.reports));
+        }
         setIsLoadingDb(false);
       })
       .catch(err => {

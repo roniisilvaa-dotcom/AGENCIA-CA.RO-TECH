@@ -30,6 +30,7 @@ export function getSavedOrCreate<T>(key: string, initial: T): T {
 export async function saveState<T>(key: string, data: T): Promise<void> {
   if (typeof window !== "undefined") {
     try {
+      localStorage.setItem(key, JSON.stringify(data));
       await fetch('/api/saveState', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

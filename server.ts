@@ -44,7 +44,11 @@ app.get("/api/health", (req, res) => {
 // Get all initial data
 app.get("/api/sync", async (req, res) => {
   try {
-    const allClients = await db.select().from(clients);
+    const rawClients = await db.select().from(clients);
+    const allClients = rawClients.map((c: any) => ({
+      ...c,
+      accessToken: c.password || c.accessToken
+    }));
     const allProjects = await db.select().from(projects);
     const allMeetings = await db.select().from(meetings);
     const allApprovals = await db.select().from(approvals);
@@ -80,7 +84,16 @@ app.post("/api/saveState", async (req, res) => {
     if (key === "caro_clients") {
       // Clear and rewrite for simplicity in this MVP transition
       await db.delete(clients);
-      if (data.length > 0) await db.insert(clients).values(data);
+      if (data.length > 0) {
+        const mappedData = data.map((c: any) => {
+          const { accessToken, ...rest } = c;
+          return {
+            ...rest,
+            password: accessToken || c.password
+          };
+        });
+        await db.insert(clients).values(mappedData);
+      }
     } else if (key === "caro_projects") {
       await db.delete(projects);
       if (data.length > 0) await db.insert(projects).values(data);

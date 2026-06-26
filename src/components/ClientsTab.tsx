@@ -14,7 +14,8 @@ import {
   MapPin, 
   Clock,
   Briefcase,
-  QrCode
+  QrCode,
+  ArrowRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
